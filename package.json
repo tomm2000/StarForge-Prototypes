@@ -1,0 +1,35 @@
+{
+  "name": "starforge",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "nuxt",
+    "build": "nuxt build",
+    "start": "nuxt start",
+    "generate": "nuxt generate",
+    "deploy": "push-dir --dir=dist --branch=gh-pages --cleanup"
+  },
+  "dependencies": {
+    "babylonjs": "^5.0.0-beta.11",
+    "core-js": "^3.19.3",
+    "dat.gui": "^0.7.7",
+    "nuxt": "^2.15.8",
+    "open-simplex-noise": "^2.5.0",
+    "p5": "^1.4.1",
+    "three": "^0.137.5",
+    "vue": "^2.6.14",
+    "vue-server-renderer": "^2.6.14",
+    "vue-template-compiler": "^2.6.14",
+    "webpack": "^4.46.0"
+  },
+  "devDependencies": {
+    "@nuxt/types": "^2.15.8",
+    "@nuxt/typescript-build": "^2.1.0",
+    "@types/dat.gui": "^0.7.7",
+    "@types/p5": "^1.4.0",
+    "@types/three": "^0.137.0",
+    "push-dir": "^0.4.1",
+    "sass": "^1.49.7",
+    "sass-loader": "10.2.1"
+  }
+}
