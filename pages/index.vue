@@ -7,7 +7,8 @@
   <li><router-link to="/terrain5">terrain 5</router-link></li>
   <li><router-link to="/terrain6">terrain 6</router-link></li>
   <li><router-link to="/terrain7">terrain 7</router-link></li>
-  <li><router-link to="/system1">system 1</router-link></li>
+  <li><router-link to="/terrain8">terrain 8</router-link></li>
+  <!-- <li><router-link to="/system1">system 1</router-link></li> -->
 </ul>
 </template>
 

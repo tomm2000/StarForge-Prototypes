@@ -1,4 +1,4 @@
-import { Mesh, Vector3, ShaderMaterial, Scene, FloatArray } from "babylonjs"
+import { Mesh, Vector3, ShaderMaterial, Scene, FloatArray, StandardMaterial } from "babylonjs"
 import { getDefaultPositionShader, positionShader } from "./positionShader"
 import { GPGPU } from '../lib/GPGPU'
 
@@ -125,6 +125,10 @@ export class IcoSphereMesh {
         data[i*3 + 2] = (results[i*4 + 2] * 2 - 1) / elevation
       }
     }, true)
+
+
+    const material = new StandardMaterial('material')
+    this.mesh.material = material
 
     return this.mesh 
   }

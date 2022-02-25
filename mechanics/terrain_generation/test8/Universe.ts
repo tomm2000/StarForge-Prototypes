@@ -10,12 +10,13 @@ import {
   StandardMaterial,
   ArcRotateCamera,
 } from "babylonjs";
-import { Terrestrial1 } from "./PlanetPrefabs/Terrestial1";
+// import { Terrestrial1 } from "./PlanetPrefabs/Terrestial1";
+import { IcoSphereMesh } from './IcoSphere/IcoSphereMesh'
 
 export class Universe {
   private scene: Scene;
   private engine: Engine;
-  private planets: Terrestrial1[] = [];
+  private planets: IcoSphereMesh[] = [];
   private divFps: HTMLElement | null
 
   constructor(canvas: HTMLCanvasElement) {
@@ -39,7 +40,7 @@ export class Universe {
 
     const n = 1
     for(let i = 0; i < n; i++) {
-      this.planets.push(new Terrestrial1(this.scene, 1))
+      this.planets.push(new IcoSphereMesh(this.scene, 1))
     }
   }
 
@@ -50,8 +51,8 @@ export class Universe {
     // var camera = new FreeCamera('camera1', new Vector3(0, 5, -10), scene);
     var camera = new ArcRotateCamera(
       "Camera",
-      Math.PI / 4,
-      Math.PI / 4,
+      -Math.PI / 2,
+      Math.PI / 2,
       4,
       Vector3.Zero(),
       scene
@@ -62,6 +63,7 @@ export class Universe {
     camera.attachControl(canvas, false);
     // Create a basic light, aiming 0, 1, 0 - meaning, to the sky
     var light = new HemisphericLight("light1", new Vector3(0, 1, 0), scene);
+    var light = new HemisphericLight("light1", new Vector3(0, -1, 0), scene);
     // Create a built-in "ground" shape;
     var ground = MeshBuilder.CreateGround(
       "ground1",
