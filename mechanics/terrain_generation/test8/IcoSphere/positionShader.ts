@@ -38,13 +38,30 @@ export function getDefaultPositionShader(): positionShader {
     fragmentSource: /*glsl*/`
       precision highp float;
 
-      uniform sampler2D texture;
+      uniform sampler2D texture0;
+      uniform sampler2D texture1;
       varying vec2 vTextureCoord;
+      uniform float math_pi;
 
       void main() {
-        gl_FragColor = texture2D(texture, vTextureCoord);
-        // gl_FragColor = vec4(vTextureCoord, 0.3, 0.3);
-        // gl_FragColor = vec4(vPosition, 2.0);
+        // vec3 position = texture2D(texture1, vTextureCoord).xyz;
+        vec3 position = (texture2D(texture1, vTextureCoord).xyz * 2.0) - 1.0;
+
+        // const latitude = Math.asin(pointOnUnitSphere.y)
+        // const longitude = Math.atan2(pointOnUnitSphere.x, -pointOnUnitSphere.z)
+        float latitude = asin(position.y) + math_pi/2.0;
+        float longitude = atan(position.x, -position.z) + math_pi;
+
+        vec2 texturepos = vec2(longitude / (math_pi * 2.0), latitude / math_pi);
+
+        float elevation = texture2D(texture0, texturepos).r;
+        elevation = max(0.0, elevation - 0.6);
+
+        vec3 pos = (position + 1.0) / 2.0;
+
+        gl_FragColor = vec4(pos, 1.0/elevation);
+
+        // gl_FragColor = vec4(latitude, longitude, 1.0, 1.0);
       }
     `,
     uniforms: []

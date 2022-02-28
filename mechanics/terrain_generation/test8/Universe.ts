@@ -9,6 +9,7 @@ import {
   UniversalCamera,
   StandardMaterial,
   ArcRotateCamera,
+  PointLight
 } from "babylonjs";
 // import { Terrestrial1 } from "./PlanetPrefabs/Terrestial1";
 import { IcoSphereMesh } from './IcoSphere/IcoSphereMesh'
@@ -62,8 +63,9 @@ export class Universe {
     // Attach the camera to the canvas
     camera.attachControl(canvas, false);
     // Create a basic light, aiming 0, 1, 0 - meaning, to the sky
-    var light = new HemisphericLight("light1", new Vector3(0, 1, 0), scene);
-    var light = new HemisphericLight("light1", new Vector3(0, -1, 0), scene);
+    // var light = new HemisphericLight("light1", new Vector3(0, 1, -4), scene);
+    new PointLight('light', new Vector3(0, 6, -4), scene)
+    new HemisphericLight("light1", new Vector3(0, -1, 0), scene);
     // Create a built-in "ground" shape;
     var ground = MeshBuilder.CreateGround(
       "ground1",
