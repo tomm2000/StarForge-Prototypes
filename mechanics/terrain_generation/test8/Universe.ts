@@ -11,13 +11,14 @@ import {
   ArcRotateCamera,
   PointLight
 } from "babylonjs";
+import { SphereMesh } from "../test8/Sphere/SphereMesh";
 // import { Terrestrial1 } from "./PlanetPrefabs/Terrestial1";
 import { IcoSphereMesh } from './IcoSphere/IcoSphereMesh'
 
 export class Universe {
   private scene: Scene;
   private engine: Engine;
-  private planets: IcoSphereMesh[] = [];
+  private planets: SphereMesh[] = [];
   private divFps: HTMLElement | null
 
   constructor(canvas: HTMLCanvasElement) {
@@ -41,7 +42,7 @@ export class Universe {
 
     const n = 1
     for(let i = 0; i < n; i++) {
-      this.planets.push(new IcoSphereMesh(this.scene, 1))
+      this.planets.push(new SphereMesh(this.scene))
     }
   }
 

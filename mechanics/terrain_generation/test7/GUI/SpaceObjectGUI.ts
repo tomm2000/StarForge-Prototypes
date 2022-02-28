@@ -19,7 +19,7 @@ export function getPlanetGUI(planetData: PlanetData, planet: PlanetPrefab): GUI 
 
   planetData.noiseLayers.forEach((layer, index) => {
     let layer_folder = p_noise.addFolder(`layer [${index}]`)
-    layer_folder.add(layer, 'amplitude', -1, 1, 0.001)
+    layer_folder.add(layer, 'amplitude', -5, 5, 0.001)
     layer_folder.add(layer, 'detail', 0.1, 5, 0.01)
     layer_folder.add(layer, 'minHeight', -1, 1, 0.001)
     layer_folder.add(layer, 'maskOnly')

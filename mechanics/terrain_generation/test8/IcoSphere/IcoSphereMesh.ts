@@ -86,9 +86,9 @@ export class IcoSphereMesh {
 
   /** generates a new mesh from scratch */
   generateNewMesh(): Mesh {
-    const mesh = MeshBuilder.CreateIcoSphere('icosphere', { updatable: true, subdivisions: 128 }, this.scene)
+    // const mesh = MeshBuilder.CreateIcoSphere('icosphere', { updatable: true, subdivisions: 128 }, this.scene)
     // const mesh = MeshBuilder.CreatePlane('plane', { width: 2, height: 1 })
-    // const mesh = MeshBuilder.CreateSphere('sphere', { diameter: 2})
+    const mesh = MeshBuilder.CreateSphere('sphere', { diameter: 2, updatable: true })
     
     //---- noise generation ----
     let size = new Vector2(256, 256)
@@ -120,6 +120,8 @@ export class IcoSphereMesh {
 
     //---- mesh updating ----
     mesh.updateMeshPositions((data) => {
+      console.log(data)
+
       const dataLength      = data.length / 3 * 4
       this.originalMeshData = new Float32Array(dataLength)
 
@@ -178,71 +180,84 @@ export class IcoSphereMesh {
         data[i*3 + 1] = (results[i*4 + 1] * 2 - 1) * (1 + 1/ elevation)
         data[i*3 + 2] = (results[i*4 + 2] * 2 - 1) * (1 + 1/ elevation)
       }
+
+
+      for(let i = 0; i < data.length; i+=3) {
+        Vector3.FromArray(data, i).normalize().toArray(data, i)
+      }
     }, true)
+
 
     const texture = RawTexture.CreateRGBATexture(noiseTexture, size.x, size.y, this.scene)
 
-    const vertexSource = `
-    precision highp float;
-    attribute vec3 position;
-    attribute vec2 uv;
-    uniform mat4 worldViewProjection;
-    varying vec2 vUV;
+    // const vertexSource = `
+    // precision highp float;
+    // attribute vec3 position;
+    // attribute vec2 uv;
+    // uniform mat4 worldViewProjection;
+    // varying vec2 vUV;
 
-    const float math_pi = 3.141592653589793;
+    // const float math_pi = 3.141592653589793;
 
-    void main(void) {
-      gl_Position = worldViewProjection * vec4(position, 1.0);
+    // void main(void) {
+    //   gl_Position = worldViewProjection * vec4(position, 1.0);
 
-      vec3 pos = normalize(position);
+    //   vec3 pos = normalize(position);
 
-      float latitude = asin(pos.y) + math_pi/2.0;
-      float longitude = atan(pos.x, -pos.z) + math_pi;
+    //   float latitude = asin(pos.y) + math_pi/2.0;
+    //   float longitude = atan(pos.x, -pos.z) + math_pi;
 
-      vUV = vec2(longitude / (math_pi * 2.0), latitude / math_pi);
-    }
-    `
+    //   vUV = vec2(longitude / (math_pi * 2.0), latitude / math_pi);
+    // }
+    // `
 
-    const fragmentSource = `
-    precision highp float;
-    varying vec2 vUV;
-    uniform sampler2D textureSampler;
-    uniform sampler2D heighmap;
+    // const fragmentSource = `
+    // precision highp float;
+    // varying vec2 vUV;
+    // uniform sampler2D textureSampler;
+    // uniform sampler2D heighmap;
 
-    const float math_pi = 3.141592653589793;
+    // const float math_pi = 3.141592653589793;
 
-    void main(void) {
+    // void main(void) {
 
-      vec3 color = texture2D(heighmap, vUV).xyz;
+    //   vec3 color = texture2D(heighmap, vUV).xyz;
 
-      color = max(vec3(0.0, 0.0, 0.), color - 0.6);
+    //   color = max(vec3(0.0, 0.0, 0.), color - 0.3);
       
-      gl_FragColor = vec4(color, 1.0);
+    //   gl_FragColor = vec4(color, 1.0);
 
-      // gl_FragColor = vec4(vUV.y, vUV.y, vUV.y, 1.0);
-    }
-    `
+    //   // gl_FragColor = vec4(vUV.y, vUV.y, vUV.y, 1.0);
+    // }
+    // `
 
-    var material = new ShaderMaterial(
-      "shader",
-      this.scene,
-      { vertexSource, fragmentSource },
-      {
-        attributes: ["position", "normal", "uv"],
-        uniforms: ["world", "worldView", "worldViewProjection", "view", "projection"],
-        samplers: ['heighmap']
-      },
-    );
+    // var material = new ShaderMaterial(
+    //   "shader",
+    //   this.scene,
+    //   { vertexSource, fragmentSource },
+    //   {
+    //     attributes: ["position", "normal", "uv"],
+    //     uniforms: ["world", "worldView", "worldViewProjection", "view", "projection"],
+    //     samplers: ['heighmap']
+    //   },
+    // );
 
-    material.setTexture('heighmap', texture)
+    var material = new StandardMaterial('mat')
+    
 
-    // material.diffuseTexture = texture
+    // material.setTexture('heighmap', texture)
+
+    material.diffuseTexture = texture
     
     mesh.material = material
 
     this.mesh = mesh
 
     return this.mesh 
+  }
+
+  initiateMesh() {
+    const geom = new Mesh('')
   }
 
   getMesh(): Mesh {

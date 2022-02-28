@@ -1,15 +1,14 @@
-import { Mesh, Vector3, ShaderMaterial, Scene, FloatArray, StandardMaterial } from "babylonjs"
+import { Mesh, Vector3, ShaderMaterial, Scene, FloatArray, StandardMaterial, MeshBuilder, Material } from "babylonjs"
 import { getDefaultPositionShader, positionShader } from "./positionShader"
 import { GPGPU } from '../lib/GPGPU'
 
 const defaultPositionShader = getDefaultPositionShader()
-const GpuDataSize = 4
 
 export class IcoSphereMesh {
   private resolution: number = 10
   private positionShader: positionShader
   private mesh: Mesh
-  private material: ShaderMaterial | undefined
+  private material: Material | undefined
   private scene: Scene
   private GPGPU: GPGPU | undefined
   private meshImageRoot: number | undefined
@@ -29,9 +28,9 @@ export class IcoSphereMesh {
     this.generateNewMesh()
   }
 
-  getMaterial(): ShaderMaterial | undefined { return this.material }
+  getMaterial(): Material | undefined { return this.material }
   // /** sets the new material, does NOT regenerate the mesh! */
-  setMaterial(material: ShaderMaterial): void {
+  setMaterial(material: Material): void {
     this.material = material
     this.mesh.material = this.material
   }
@@ -51,7 +50,7 @@ export class IcoSphereMesh {
 
     this.mesh.updateMeshPositions((data) => {
       this.positionShader.uniforms.forEach(uniform => {
-        GPGPU.addUniform(uniform.name, uniform.value)
+        GPGPU.addUniform(uniform)
       })
 
       GPGPU.draw()
@@ -61,9 +60,9 @@ export class IcoSphereMesh {
       for(let i = 0; i < results.length / 4; i++) {
         const elevation = results[i*4 + 3]
         
-        data[i*3 + 0] = (results[i*4 + 0] * 2 - 1) / elevation
-        data[i*3 + 1] = (results[i*4 + 1] * 2 - 1) / elevation
-        data[i*3 + 2] = (results[i*4 + 2] * 2 - 1) / elevation
+        data[i*3 + 0] = (originalMeshData[i*4 + 0] * 2 - 1) / elevation
+        data[i*3 + 1] = (originalMeshData[i*4 + 1] * 2 - 1) / elevation
+        data[i*3 + 2] = (originalMeshData[i*4 + 2] * 2 - 1) / elevation
       }
     }, true)
 
@@ -71,7 +70,7 @@ export class IcoSphereMesh {
 
   /** generates a new mesh from scratch */
   generateNewMesh(): Mesh {
-    const mesh = Mesh.CreateIcoSphere('icosphere', {subdivisions: this.resolution, updatable: true}, this.scene)
+    const mesh = MeshBuilder.CreateIcoSphere('icosphere', {subdivisions: this.resolution, updatable: true}, this.scene)
 
     this.mesh = mesh
 
@@ -80,7 +79,6 @@ export class IcoSphereMesh {
       this.originalMeshData = new Float32Array(dataLength)
 
       for (let i = 0; i < data.length / 3; i++) {
-        // normalizing data from [-1,1] -> [0,2] -> [0,1]
         this.originalMeshData[i*4 + 0] = (data[i*3 + 0] + 1) / 2
         this.originalMeshData[i*4 + 1] = (data[i*3 + 1] + 1) / 2
         this.originalMeshData[i*4 + 2] = (data[i*3 + 2] + 1) / 2
@@ -94,7 +92,6 @@ export class IcoSphereMesh {
         while((dataLength / 4) %size != 0) {
           size -= 1
         }
-        // console.log(dataLength / 4 / size, size)
         this.meshImageRoot = size
       }
 
@@ -109,22 +106,22 @@ export class IcoSphereMesh {
       this.GPGPU.addAttrib("textureCoord", {numElements: 2, stride: 20, offset: 12})
 
       this.positionShader.uniforms.forEach(uniform => {
-        this.GPGPU?.addUniform(uniform.name, uniform.value)
+        this.GPGPU?.addUniform(uniform)
       })
 
       this.GPGPU.draw()
 
       const results = this.GPGPU.getPixels()
-
+      
       for(let i = 0; i < results.length / 4; i++) {
         const elevation = results[i*4 + 3]
-        
-        // restoring data from [0,1] -> [0,2] -> [-1,1]
-        data[i*3 + 0] = (results[i*4 + 0] * 2 - 1) / elevation
-        data[i*3 + 1] = (results[i*4 + 1] * 2 - 1) / elevation
-        data[i*3 + 2] = (results[i*4 + 2] * 2 - 1) / elevation
+
+        data[i*3 + 0] = (this.originalMeshData[i*4 + 0] * 2 - 1) / elevation
+        data[i*3 + 1] = (this.originalMeshData[i*4 + 1] * 2 - 1) / elevation
+        data[i*3 + 2] = (this.originalMeshData[i*4 + 2] * 2 - 1) / elevation
       }
     }, true)
+
 
 
     const material = new StandardMaterial('material')

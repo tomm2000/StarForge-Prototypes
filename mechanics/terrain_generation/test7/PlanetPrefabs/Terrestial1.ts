@@ -88,12 +88,12 @@ export class Terrestrial1 implements PlanetPrefab  {
       uniform float debugNoise;
       uniform float layerAmount;
 
-      uniform float layerAmplitude[32];
-      uniform float layerUsePrev[32];
-      uniform float layerUseFirst[32];
-      uniform float layerMaskOnly[32];
-      uniform float layerDetail[32];
-      uniform float layerMinHeight[32];
+      uniform float layerAmplitude[MAX_LAYERS];
+      uniform float layerUsePrev[MAX_LAYERS];
+      uniform float layerUseFirst[MAX_LAYERS];
+      uniform float layerMaskOnly[MAX_LAYERS];
+      uniform float layerDetail[MAX_LAYERS];
+      uniform float layerMinHeight[MAX_LAYERS];
 
       uniform sampler2D texture;
       varying vec2 vTextureCoord;
@@ -145,32 +145,30 @@ export class Terrestrial1 implements PlanetPrefab  {
         vec3 pos = (position.xyz + 1.0) / 2.0;
 
         gl_FragColor = vec4(pos, 1.0 / (elevation * radius));
+        // gl_FragColor = vec4(pos, 1.0 / layerAmplitude[0]);
       }
     `
 
     const shader: positionShader = getDefaultPositionShaderVertex(fs)
 
-    this.planetData.radius
-    this.planetData.debugNoise ? 1 : 0
-    this.planetData.noiseLayers.length
-    this.planetData.noiseLayers.map(layer => layer.amplitude)
-    this.planetData.noiseLayers.map(layer => layer.usePrevLayerAsMask  ? 1 : 0)
-    this.planetData.noiseLayers.map(layer => layer.useFirstLayerAsMask ? 1 : 0)
-    this.planetData.noiseLayers.map(layer => layer.maskOnly ? 1 : 0)
-    this.planetData.noiseLayers.map(layer => layer.detail)
-    this.planetData.noiseLayers.map(layer => layer.minHeight)
-
     shader.uniforms = [
-      {name: 'radius'        , value: this.planetData.radius},
-      {name: 'debugNoise'    , value: this.planetData.debugNoise ? 1 : 0},
-      {name: 'layerAmount'   , value: this.planetData.noiseLayers.length},
-      {name: 'layerAmplitude', value: this.planetData.noiseLayers.map(layer => layer.amplitude)},
-      {name: 'layerUsePrev'  , value: this.planetData.noiseLayers.map(layer => layer.usePrevLayerAsMask  ? 1 : 0)},
-      {name: 'layerUseFirst' , value: this.planetData.noiseLayers.map(layer => layer.useFirstLayerAsMask ? 1 : 0)},
-      {name: 'layerMaskOnly' , value: this.planetData.noiseLayers.map(layer => layer.maskOnly ? 1 : 0)},
-      {name: 'layerDetail'   , value: this.planetData.noiseLayers.map(layer => layer.detail)},
-      {name: 'layerMinHeight', value: this.planetData.noiseLayers.map(layer => layer.minHeight)}
+      {name: 'radius'        , type: 'uniform1f' , value: this.planetData.radius},
+      {name: 'debugNoise'    , type: 'uniform1f' , value: this.planetData.debugNoise ? 1 : 0},
+      {name: 'layerAmount'   , type: 'uniform1f', value: this.planetData.noiseLayers.length},
     ]
+
+    if(this.planetData.noiseLayers.length > 0) {
+      shader.uniforms = shader.uniforms.concat([
+        {name: 'layerAmplitude', type: 'uniform1fv', value: this.planetData.noiseLayers.map(layer => layer.amplitude)},
+        {name: 'layerUsePrev'  , type: 'uniform1fv', value: this.planetData.noiseLayers.map(layer => layer.usePrevLayerAsMask  ? 1 : 0)},
+        {name: 'layerUseFirst' , type: 'uniform1fv', value: this.planetData.noiseLayers.map(layer => layer.useFirstLayerAsMask ? 1 : 0)},
+        {name: 'layerMaskOnly' , type: 'uniform1fv', value: this.planetData.noiseLayers.map(layer => layer.maskOnly ? 1 : 0)},
+        {name: 'layerDetail'   , type: 'uniform1fv', value: this.planetData.noiseLayers.map(layer => layer.detail)},
+        {name: 'layerMinHeight', type: 'uniform1fv', value: this.planetData.noiseLayers.map(layer => layer.minHeight)}
+      ])
+    }
+
+    // console.log(shader.uniforms)
 
     return shader
   }

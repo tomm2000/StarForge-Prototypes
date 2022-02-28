@@ -4,6 +4,26 @@ type constructorData = {
   width: number
 }
 
+export type GPGPUuniform = floatUniform | floatArrayUniform | integerUniform
+
+export type floatUniform = {
+  name: string,
+  value: number,
+  type: "uniform1f"
+}
+
+export type integerUniform = {
+  name: string,
+  value: number,
+  type: "uniform1i"
+}
+
+export type floatArrayUniform = {
+  name: string,
+  value: number[],
+  type: "uniform1fv"
+}
+
 /* https://github.com/DanRuta/GPGPU */
 export class GPGPU {
   private ready: boolean
@@ -154,7 +174,9 @@ export class GPGPU {
     this.gl.vertexAttribPointer(this.attribs[name], numElements, this.gl.FLOAT, false, stride, offset)
   }
 
-  addUniform(name: string, value: any, type: any = "uniform1f") {
+  addUniform(uniform: GPGPUuniform) {
+    const {name, type, value} = uniform
+
     this.uniforms[name] = this.gl.getUniformLocation(this.program!, name)
 
     if (value != undefined) {
@@ -170,14 +192,14 @@ export class GPGPU {
     if (!this.ready) {
 
       this.ready = true
-      this.addUniform("texture0", 0, "uniform1i")
+      this.addUniform({name: "texture0", value: 0, type: "uniform1i"})
 
       const texToAdd = texture == this.textures[this.textures.length - 1] ? this.textures.length - 1 : this.textures.length
 
       for (let t = 0; t < texToAdd; t++) {
         this.gl.activeTexture((this.gl as any)[`TEXTURE${t + 1}`])
         this.gl.bindTexture(this.gl.TEXTURE_2D, this.textures[t].tex)
-        this.addUniform(`texture${t + 1}`, t + 1, "uniform1i")
+        this.addUniform({name: `texture${t + 1}`, value: t + 1, type: "uniform1i"})
       }
 
       this.gl.activeTexture(this.gl.TEXTURE0)

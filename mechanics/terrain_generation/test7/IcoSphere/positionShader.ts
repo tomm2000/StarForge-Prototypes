@@ -1,5 +1,7 @@
+import { GPGPUuniform } from "../lib/GPGPU"
+
 export type positionShader = { vertexSource: string, fragmentSource: string, uniforms: positionUniform[] }
-export type positionUniform = { name: string, value: any } // "uniform1f"
+export type positionUniform = GPGPUuniform
 
 export function getDefaultPositionShaderVertex(fragmentSource: string): positionShader {
   const shader: positionShader = {
