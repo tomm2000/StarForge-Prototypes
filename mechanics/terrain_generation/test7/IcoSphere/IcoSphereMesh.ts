@@ -1,6 +1,7 @@
-import { Mesh, Vector3, ShaderMaterial, Scene, FloatArray, StandardMaterial, MeshBuilder, Material } from "babylonjs"
+import { Mesh, Vector3, ShaderMaterial, Scene, FloatArray, StandardMaterial, MeshBuilder, Material, MaterialPluginBase, Constants, RegisterMaterialPlugin, Color3, VertexBuffer, PBRMaterial, PBRBaseSimpleMaterial, PBRMetallicRoughnessMaterial, Vector2, RawTexture } from "babylonjs"
 import { getDefaultPositionShader, positionShader } from "./positionShader"
 import { GPGPU } from '../lib/GPGPU'
+import { mapValue } from "../lib/Math"
 
 const defaultPositionShader = getDefaultPositionShader()
 
@@ -14,7 +15,7 @@ export class IcoSphereMesh {
   private meshImageRoot: number | undefined
   private originalMeshData: Float32Array | undefined
 
-  constructor(scene: Scene, resolution: number = 10, positionShader: positionShader = defaultPositionShader) {
+  constructor(scene: Scene, resolution: number = 1, positionShader: positionShader = defaultPositionShader) {
     this.positionShader = positionShader;
     this.resolution = resolution
     this.scene = scene
@@ -47,6 +48,7 @@ export class IcoSphereMesh {
 
     const GPGPU = this.GPGPU
     const originalMeshData = this.originalMeshData
+    let colorData = new Float32Array(0)
 
     this.mesh.updateMeshPositions((data) => {
       this.positionShader.uniforms.forEach(uniform => {
@@ -57,14 +59,34 @@ export class IcoSphereMesh {
 
       const results = GPGPU.getPixels()
 
+      colorData = new Float32Array(originalMeshData.length)
+
+      let max_elevation = Number.MIN_VALUE
+      let min_elevation = Number.MAX_VALUE
+      
       for(let i = 0; i < results.length / 4; i++) {
         const elevation = results[i*4 + 3]
-        
+
         data[i*3 + 0] = (originalMeshData[i*4 + 0] * 2 - 1) / elevation
         data[i*3 + 1] = (originalMeshData[i*4 + 1] * 2 - 1) / elevation
         data[i*3 + 2] = (originalMeshData[i*4 + 2] * 2 - 1) / elevation
+
+        max_elevation = Math.max(max_elevation, 1/elevation)
+        min_elevation = Math.min(min_elevation, 1/elevation)
+      }
+
+      for(let i = 0; i < results.length / 4; i++) {
+        const elevation = results[i*4 + 3]
+
+        colorData[i*4+0] = mapValue(1/elevation, min_elevation, max_elevation, 0, 1)
+        colorData[i*4+1] = 0
+        colorData[i*4+2] = 0
+        colorData[i*4+3] = 1
       }
     }, true)
+
+    
+    this.mesh.setVerticesData('color', colorData)
 
   }
 
@@ -73,18 +95,20 @@ export class IcoSphereMesh {
     const mesh = MeshBuilder.CreateIcoSphere('icosphere', {subdivisions: this.resolution, updatable: true}, this.scene)
 
     this.mesh = mesh
+    let colorData = new Float32Array(0)
 
     this.mesh.updateMeshPositions((data) => {
       const dataLength      = data.length / 3 * 4
       this.originalMeshData = new Float32Array(dataLength)
+      colorData = new Float32Array(dataLength)
 
       for (let i = 0; i < data.length / 3; i++) {
         this.originalMeshData[i*4 + 0] = (data[i*3 + 0] + 1) / 2
         this.originalMeshData[i*4 + 1] = (data[i*3 + 1] + 1) / 2
         this.originalMeshData[i*4 + 2] = (data[i*3 + 2] + 1) / 2
 
-
         this.originalMeshData[i*4 + 3] = 1
+
       }
 
       if(this.meshImageRoot == undefined) {
@@ -112,19 +136,56 @@ export class IcoSphereMesh {
       this.GPGPU.draw()
 
       const results = this.GPGPU.getPixels()
-      
+      let max_elevation = Number.MIN_VALUE
+      let min_elevation = Number.MAX_VALUE
+
+
       for(let i = 0; i < results.length / 4; i++) {
         const elevation = results[i*4 + 3]
 
         data[i*3 + 0] = (this.originalMeshData[i*4 + 0] * 2 - 1) / elevation
         data[i*3 + 1] = (this.originalMeshData[i*4 + 1] * 2 - 1) / elevation
         data[i*3 + 2] = (this.originalMeshData[i*4 + 2] * 2 - 1) / elevation
+
+        max_elevation = Math.max(max_elevation, 1/elevation)
+        min_elevation = Math.min(min_elevation, 1/elevation)
+      }
+
+      for(let i = 0; i < results.length / 4; i++) {
+        const elevation = results[i*4 + 3]
+
+        colorData[i*4+0] = mapValue(1/elevation, min_elevation, max_elevation, 0, 1)
+        colorData[i*4+1] = 0
+        colorData[i*4+2] = 0
+        colorData[i*4+3] = 1
       }
     }, true)
 
+    // mesh.setVerticesData('color', colorData)
 
+    const uvdata = mesh.getVerticesData('uv')
 
+    console.log(uvdata?.length)
+
+    if(uvdata) {
+      for(let i = 0; i < uvdata.length/2; i+=2) {
+        // console.log(`(${uvdata[i*2]},${uvdata[i*2+1]})`)
+      }
+    }
+
+    const plane = MeshBuilder.CreatePlane('plane', {sideOrientation:1}, this.scene)
+    // plane.position = new Vector3(0,0,-2)
+    const planeMaterial = new StandardMaterial('mat')
+    plane.material = planeMaterial
+    
+
+    mesh.position = new Vector3(2,0,0)
     const material = new StandardMaterial('material')
+    // material.metallic = 0.5
+    // material.roughness = 0.5
+    // material.backFaceCulling = true
+    // material.diffuseColor = new Color3(1,0,0)
+    // const plugin = new BlackAndWhitePluginMaterial(material)
     this.mesh.material = material
 
     return this.mesh 

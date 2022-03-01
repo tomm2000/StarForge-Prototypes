@@ -31,7 +31,7 @@ export class Terrestrial1 implements PlanetPrefab  {
 
     this.gui = getPlanetGUI(this.planetData, this)
 
-    this.icoSphereMesh = new IcoSphereMesh(this.scene, 32, this.getPositionShader())
+    this.icoSphereMesh = new IcoSphereMesh(this.scene, undefined, this.getPositionShader())
 
     this.updateInterval = setInterval(() => {
       if(this.autoUpdate) {

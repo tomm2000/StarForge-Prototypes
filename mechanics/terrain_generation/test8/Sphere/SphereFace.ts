@@ -1,5 +1,6 @@
-import {  Mesh, NoiseProceduralTexture, Scene, ShaderMaterial, Texture, Vector2, Vector3, VertexData } from "babylonjs";
+import {  Mesh, NoiseProceduralTexture, Scene, ShaderMaterial, StandardMaterial, Texture, Vector2, Vector3, VertexData } from "babylonjs";
 import { divideScalar, multiplyScalar } from "../lib/VectorMath";
+import { pointOnCubeToUv } from "./CubeTexture";
 import { SphereMesh } from "./SphereMesh";
 
 export class SphereFace {
@@ -31,7 +32,7 @@ export class SphereFace {
 
     const positions: number[] = []
     // const normalArray: number[] = []
-    // const uvArray: number[] = []
+    const uvArray: number[] = []
     const indices : number[] = []
 
     let triIndex = 0
@@ -43,12 +44,14 @@ export class SphereFace {
       for(let x = 0; x < resolution; x ++) {
         const i = x + y * resolution
 
+
         const percent = divideScalar(new Vector2(x,y), resolution-1)
 
         const a  = multiplyScalar(axisA, (percent.x - .5) * 2)
         const b  = multiplyScalar(axisB, (percent.y - .5) * 2)
 
         const pointOnUnitCube: Vector3 = normal.clone().add(a).add(b)
+        // console.log(pointOnUnitCube.asArray())
         
         // let {x, y, z} = pointOnUnitCube
 
@@ -67,8 +70,10 @@ export class SphereFace {
 
         const pointOnUnitSphere = new Vector3(px,py,pz)
         // const pointOnUnitSphere = pointOnUnitCube.clone().normalize()
+        // const pointOnUnitSphere = pointOnUnitCube
 
         positions.push(...pointOnUnitSphere.asArray())
+        uvArray.push(...pointOnCubeToUv(pointOnUnitCube, normal).asArray())
 
         if(x != resolution-1 && y != resolution-1) {
           indices[triIndex+2] = i;
@@ -88,67 +93,14 @@ export class SphereFace {
 
     vertexData.positions = positions
     vertexData.indices = indices
+    vertexData.uvs = uvArray
 
     vertexData.applyToMesh(this.mesh)
 
-    // console.log(this.mesh.geometry?.getVerticesData('position'))
-
-    const vertexSource = `
-    precision highp float;
-    attribute vec3 position;
-    attribute vec2 uv;
-    uniform mat4 worldViewProjection;
-    varying vec2 vUV;
-
-    const float math_pi = 3.141592653589793;
-
-    void main(void) {
-      gl_Position = worldViewProjection * vec4(position, 1.0);
-
-      vec3 pos = normalize(position);
-
-      float latitude = asin(pos.y) + math_pi/2.0;
-      float longitude = atan(pos.x, -pos.z) + math_pi;
-
-      vUV = vec2(longitude / (math_pi * 2.0), latitude / math_pi);
-    }
-    `
-
-    const fragmentSource = `
-    precision highp float;
-    varying vec2 vUV;
-    uniform sampler2D textureSampler;
-    uniform sampler2D heighmap;
-
-    const float math_pi = 3.141592653589793;
-
-    void main(void) {
-
-      vec3 color = texture2D(heighmap, vUV).xyz;
-
-      color = max(vec3(0.0, 0.0, 0.), color - 0.3);
-      
-      gl_FragColor = vec4(color, 1.0);
-
-      // gl_FragColor = vec4(vUV.y, vUV.y, vUV.y, 1.0);
-    }
-    `
-
-    var material = new ShaderMaterial(
-      "shader",
-      this.scene,
-      { vertexSource, fragmentSource },
-      {
-        attributes: ["position", "normal", "uv"],
-        uniforms: ["world", "worldView", "worldViewProjection", "view", "projection"],
-        samplers: ['heighmap']
-      },
-    );
-
     
-    material.setTexture('heighmap', this.texture)
-    
-
+    const material = new StandardMaterial('material')
+    // material.wireframe = true
+    material.diffuseTexture = this.texture
     this.mesh.material = material
   }
 
@@ -158,5 +110,6 @@ export class SphereFace {
   } 
 
   dispose() {
+    this.mesh.dispose()
   }
 }

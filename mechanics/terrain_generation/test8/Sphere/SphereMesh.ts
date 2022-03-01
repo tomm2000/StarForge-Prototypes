@@ -1,4 +1,4 @@
-import { Mesh, NoiseProceduralTexture, RawTexture, Scene, Vector2, Vector3 } from "babylonjs"
+import { Mesh, NoiseProceduralTexture, RawTexture, Scene, Texture, Vector2, Vector3 } from "babylonjs"
 import { makeNoise3D } from "open-simplex-noise"
 import { multiplyScalar } from "../lib/VectorMath"
 import { SphereFace } from "./SphereFace"
@@ -39,42 +39,14 @@ export class SphereMesh {
   private faces: SphereFace[] = []
   private positionFunction: PointOnObjectFunction
 
-  constructor(scene: Scene, resolution: number = 8, positionFunction: PointOnObjectFunction = defaultPositionFunction) {
+  constructor(scene: Scene, resolution: number = 20, positionFunction: PointOnObjectFunction = defaultPositionFunction) {
     this.positionFunction = positionFunction;
     this.resolution = resolution
     
     // const texture = new NoiseProceduralTexture('perlin', 256)
     // texture.animationSpeedFactor = 0
 
-    //---- noise generation ----
-    let size = new Vector2(256, 256)
-    // let noiseData = new Uint8Array(size*size*3)
-    let noiseData = new Float32Array(size.x * size.y * 4)
-    let noiseTexture = new Uint8Array(size.x * size.y * 4)
-    const noise = makeNoise3D(Math.random()*999)
-
-    for(let y = 0; y < size.y; y++) {
-      for(let x = 0; x < size.x; x++) {
-        const pos = y*size.y+x
-
-        const coord = cartesianToCoordinate(x / size.x, y / size.y)
-        const position = coordinateToPoint(coord)
-
-        const v = (noise(position.x * 2, position.y * 2, position.z * 2) + 1) / 2
-
-        noiseTexture[pos*4+0] = v * 256
-        noiseTexture[pos*4+1] = v * 256
-        noiseTexture[pos*4+2] = v * 256
-        noiseTexture[pos*4+3] = 255
-
-        noiseData[pos*4+0] = v
-        noiseData[pos*4+1] = v
-        noiseData[pos*4+2] = v
-        noiseData[pos*4+3] = 1
-      }
-    }
-    
-    const texture = RawTexture.CreateRGBATexture(noiseTexture, size.x, size.y, scene)
+    const texture = new Texture('http://localhost:3001/images/testcube')
 
     this.faces = [
       new SphereFace(scene, new Vector3( 1,  0,  0), this, texture),

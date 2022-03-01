@@ -9,7 +9,8 @@ import {
   UniversalCamera,
   StandardMaterial,
   ArcRotateCamera,
-  PointLight
+  PointLight,
+  AxesViewer
 } from "babylonjs";
 import { SphereMesh } from "../test8/Sphere/SphereMesh";
 // import { Terrestrial1 } from "./PlanetPrefabs/Terrestial1";
@@ -19,7 +20,7 @@ export class Universe {
   private scene: Scene;
   private engine: Engine;
   private planets: SphereMesh[] = [];
-  private divFps: HTMLElement | null
+  private divFps: HTMLElement | null 
 
   constructor(canvas: HTMLCanvasElement) {
     // this.engine = new Engine(canvas, true, {preserveDrawingBuffer: true, stencil: true});
@@ -53,8 +54,8 @@ export class Universe {
     // var camera = new FreeCamera('camera1', new Vector3(0, 5, -10), scene);
     var camera = new ArcRotateCamera(
       "Camera",
-      -Math.PI / 2,
-      Math.PI / 2,
+      Math.PI / 4,
+      Math.PI / 3,
       4,
       Vector3.Zero(),
       scene
@@ -67,6 +68,7 @@ export class Universe {
     // var light = new HemisphericLight("light1", new Vector3(0, 1, -4), scene);
     new PointLight('light', new Vector3(0, 6, -4), scene)
     new HemisphericLight("light1", new Vector3(0, -1, 0), scene);
+    // new AxesViewer(scene, 2)
     // Create a built-in "ground" shape;
     var ground = MeshBuilder.CreateGround(
       "ground1",

@@ -1,13 +1,13 @@
 <template>
 <ul>
-  <li><router-link to="/terrain1">terrain 1 (obsolete)</router-link></li>
-  <li><router-link to="/terrain2">terrain 2 (obsolete)</router-link></li>
-  <li><router-link to="/terrain3">terrain 3 (obsolete)</router-link></li>
-  <li><router-link to="/terrain4">terrain 4 (obsolete)</router-link></li>
-  <li><router-link to="/terrain5">terrain 5 (obsolete)</router-link></li>
-  <li><router-link to="/terrain6">terrain 6 (obsolete)</router-link></li>
-  <li><router-link to="/terrain7">terrain 7 (latest)</router-link></li>
-  <li><router-link to="/terrain8">terrain 8 (failed)</router-link></li>
+  <li><router-link to="/terrain1">terrain 1 (3D mesh)</router-link></li>
+  <li><router-link to="/terrain2">terrain 2 (Sphere morphing)</router-link></li>
+  <li><router-link to="/terrain3">terrain 3 (Normal & noise map)</router-link></li>
+  <li><router-link to="/terrain4">terrain 4 (Terrain & shaders)</router-link></li>
+  <li><router-link to="/terrain5">terrain 5 (Customizable noise)</router-link></li>
+  <li><router-link to="/terrain6">terrain 6 (fragment shader & reflection shader)</router-link></li>
+  <li><router-link to="/terrain7">terrain 7 (GPGPU)</router-link></li>
+  <li><router-link to="/terrain8">terrain 8 (Texture mapping)</router-link></li>
   <!-- <li><router-link to="/system1">system 1</router-link></li> -->
 </ul>
 </template>
