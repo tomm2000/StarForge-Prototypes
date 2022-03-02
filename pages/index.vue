@@ -8,6 +8,7 @@
   <li><router-link to="/terrain6">terrain 6 (fragment shader & reflection shader)</router-link></li>
   <li><router-link to="/terrain7">terrain 7 (GPGPU)</router-link></li>
   <li><router-link to="/terrain8">terrain 8 (Texture mapping)</router-link></li>
+  <li><router-link to="/terrain9">terrain 9 (Texture mapping + ThreeJS)</router-link></li>
   <!-- <li><router-link to="/system1">system 1</router-link></li> -->
 </ul>
 </template>

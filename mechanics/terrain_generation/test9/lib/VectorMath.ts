@@ -1,4 +1,4 @@
-import { Vector2, Vector3 } from "babylonjs";
+import { Vector2, Vector3 } from "three";
 
 export function divideScalar(vec: Vector2, n: number): Vector2 {
   return vec.divide(new Vector2(n,n))

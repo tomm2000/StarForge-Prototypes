@@ -25,3 +25,9 @@ yarn generate
 ## Todo:
 ### Optimization:
 - position shaders can return only the elevation of each given position, reducing by 4 the amount of output data
+
+## Possible fixes:
+### Equirectangular UV warping:
+- no fix found
+### Cube mapping seams between faces
+- adjacent faces should share pixels where they touch

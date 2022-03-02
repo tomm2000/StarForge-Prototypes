@@ -12,14 +12,14 @@ import {
   PointLight,
   AxesViewer
 } from "babylonjs";
-import { SphereMesh } from "../test8/Sphere/SphereMesh";
-// import { Terrestrial1 } from "./PlanetPrefabs/Terrestial1";
-import { IcoSphereMesh } from './IcoSphere/IcoSphereMesh'
+import { SphereMesh } from "./Sphere/SphereMesh";
+import { Terrestrial1 } from "./PlanetPrefabs/Terrestial1";
+import { PlanetPrefab } from "./PlanetPrefabs/PlanetPrefab";
 
 export class Universe {
   private scene: Scene;
   private engine: Engine;
-  private planets: SphereMesh[] = [];
+  private planets: PlanetPrefab[] = [];
   private divFps: HTMLElement | null 
 
   constructor(canvas: HTMLCanvasElement) {
@@ -43,7 +43,7 @@ export class Universe {
 
     const n = 1
     for(let i = 0; i < n; i++) {
-      this.planets.push(new SphereMesh(this.scene))
+      this.planets.push(new Terrestrial1(this.scene))
     }
   }
 
@@ -56,7 +56,7 @@ export class Universe {
       "Camera",
       Math.PI / 4,
       Math.PI / 3,
-      4,
+      2,
       Vector3.Zero(),
       scene
     );
@@ -83,5 +83,7 @@ export class Universe {
 
   public dispose() {
     this.planets.forEach(planet => planet.dispose())
+    this.scene.dispose()
+    this.engine.dispose()
   }
 }

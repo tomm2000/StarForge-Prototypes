@@ -1,34 +1,27 @@
-import {  Mesh, NoiseProceduralTexture, Scene, ShaderMaterial, StandardMaterial, Texture, Vector2, Vector3, VertexData } from "babylonjs";
+import {  Material, Mesh, Node, NoiseProceduralTexture, Scene, ShaderMaterial, StandardMaterial, Texture, TransformNode, Vector2, Vector3, VertexData } from "babylonjs";
 import { divideScalar, multiplyScalar } from "../lib/VectorMath";
-import { pointOnCubeToUv } from "./CubeTexture";
+import { cubeToUv } from "./CubeTexture";
 import { SphereMesh } from "./SphereMesh";
 
 export class SphereFace {
   private normal: Vector3
   private parent: SphereMesh
-  // private geometry: BufferGeometry = new BufferGeometry()
   private mesh: Mesh
   private scene: Scene
-  private texture: Texture
+  private material: Material
+  private resolution: number
 
-  constructor(scene: Scene, normal: Vector3, parent: SphereMesh, texture: Texture) {
+  constructor(scene: Scene, normal: Vector3, parent: SphereMesh, material: Material, resolution: number) {
     this.normal = normal
     this.parent = parent
     this.mesh = new Mesh('mesh', scene)
     this.scene = scene
-    this.texture = texture
+    this.material = material
+    this.resolution = resolution
   }
 
   generateGeometry(): void {
-    const { parent, normal } = this
-    const resolution = parent.getResolution()
-
-    const positionNumComponents = 3;
-    // const normalNumComponents = 3;
-    // const uvNumComponents = 2;
-
-    const numVertices = resolution * resolution
-    const numIndices = (resolution-1) * (resolution-1) * 6;
+    const { normal, resolution } = this
 
     const positions: number[] = []
     // const normalArray: number[] = []
@@ -63,17 +56,14 @@ export class SphereFace {
         const py = pointOnUnitCube.y * Math.sqrt(1 - (z2+x2) / 2 + (z2 * x2) / 3)
         const pz = pointOnUnitCube.z * Math.sqrt(1 - (x2+y2) / 2 + (x2 * y2) / 3)
 
-
-        // x = x * Math.sqrt(1 - (y*y/2) - (z*z/2) + (y*y*z*z/3))
-        // y = y * Math.sqrt(1 - (z*z/2) - (x*x/2) + (z*z*x*x/3))
-        // z = z * Math.sqrt(1 - (x*x/2) - (y*y/2) + (x*x*y*y/3))
-
         const pointOnUnitSphere = new Vector3(px,py,pz)
         // const pointOnUnitSphere = pointOnUnitCube.clone().normalize()
         // const pointOnUnitSphere = pointOnUnitCube
 
-        positions.push(...pointOnUnitSphere.asArray())
-        uvArray.push(...pointOnCubeToUv(pointOnUnitCube, normal).asArray())
+        const pointOnObject = this.parent.getPointOnObject(pointOnUnitSphere)
+
+        positions.push(...pointOnObject.asArray())
+        uvArray.push(...cubeToUv(pointOnUnitCube, normal).asArray())
 
         if(x != resolution-1 && y != resolution-1) {
           indices[triIndex+2] = i;
@@ -97,15 +87,11 @@ export class SphereFace {
 
     vertexData.applyToMesh(this.mesh)
 
-    
-    const material = new StandardMaterial('material')
-    // material.wireframe = true
-    material.diffuseTexture = this.texture
-    this.mesh.material = material
+    this.mesh.material = this.material
+    this.mesh.parent = this.parent.getOriginNode()
   }
 
   getMesh(): Mesh {
-
     return this.mesh
   } 
 

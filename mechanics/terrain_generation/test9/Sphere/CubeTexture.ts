@@ -1,6 +1,4 @@
-import { Vector2, Vector3 } from "babylonjs";
-import { mapValue } from "../../test7/lib/Math";
-import { v2String, v3String } from "../lib/VectorMath";
+import { Vector2, Vector3 } from "three";
 
 function normalToGrid(normal: Vector3): Vector2 {
   if     (normal.x ==  1) { return new Vector2(0, 1) } // face 0
@@ -27,9 +25,9 @@ function normalToFace(normal: Vector3): number {
 export function cubeToUv(pointOnUnitCube: Vector3, normal: Vector3): Vector2 {
   const gridPos = normalToGrid(normal)
 
-  const p = pointOnUnitCube.add(new Vector3(1,1,1)).divide(new Vector3(2,2,2))
+  const p = pointOnUnitCube.addScalar(1).divideScalar(2)
 
-  let percent: Vector2 = Vector2.Zero()
+  let percent: Vector2 = new Vector2()
 
   switch(normalToFace(normal)) {
     case 0: percent = new Vector2(p.z, p.y); break;
@@ -40,7 +38,7 @@ export function cubeToUv(pointOnUnitCube: Vector3, normal: Vector3): Vector2 {
     case 5: percent = new Vector2(p.z, p.x); break;
   }
 
-  let uv = percent.divide(new Vector2(3, 2)).add(gridPos.divide(new Vector2(3, 2)))
+  let uv = percent.clone().divide(new Vector2(3, 2)).add(gridPos.divide(new Vector2(3, 2)))
 
   return uv
 }
@@ -76,30 +74,65 @@ function uvToFace(uv: Vector2): number {
 export function uvToCube(uv: Vector2): {normal: Vector3, position: Vector3 } {
   const normal = faceToNormal(uvToFace(uv)) // 0,1,0
 
-  // const pos = uv.multiplyByFloats(3, 2).multiplyByFloats(2, 2).subtract(new Vector2(1, 1))
   const pos = new Vector2(
     (uv.x % (1/3)) * 3 * 2 - 1, // ((1/3) % (1/3)) * 3 * 2 - 1  => -1
     (uv.y % (1/2)) * 2 * 2 - 1  // ((0) % (1/2)) * 2 * 2 - 1    => -1
   )
-  let pointOnUnitCube = Vector3.Zero()
+  let pointOnUnitCube = new Vector3()
 
   switch(uvToFace(uv)) {
     case 0: pointOnUnitCube = new Vector3(     1, pos.y,  pos.x); break;
     case 2: pointOnUnitCube = new Vector3(    -1, pos.y, -pos.x); break;
     case 1: pointOnUnitCube = new Vector3(-pos.x, pos.y,      1); break;
     case 3: pointOnUnitCube = new Vector3( pos.x, pos.y,     -1); break;
-    case 4: pointOnUnitCube = new Vector3(-pos.y,     1,  pos.x); break;
+    case 4: pointOnUnitCube = new Vector3(-pos.y,     1, pos.x); break;
     case 5: pointOnUnitCube = new Vector3( pos.y,    -1,  pos.x); break;
     default: throw 'error in converting uv to face'
   }
 
-  const x2 = pointOnUnitCube.x * pointOnUnitCube.x
-  const y2 = pointOnUnitCube.y * pointOnUnitCube.y
-  const z2 = pointOnUnitCube.z * pointOnUnitCube.z
+  const cube = pointOnUnitCube.clone()
 
-  const px = pointOnUnitCube.x * Math.sqrt(1 - (y2+z2) / 2 + (y2 * z2) / 3)
-  const py = pointOnUnitCube.y * Math.sqrt(1 - (z2+x2) / 2 + (z2 * x2) / 3)
-  const pz = pointOnUnitCube.z * Math.sqrt(1 - (x2+y2) / 2 + (x2 * y2) / 3)
+  const x2 = cube.x * cube.x
+  const y2 = cube.y * cube.y
+  const z2 = cube.z * cube.z
+
+  const px = cube.x * Math.sqrt(1 - (y2+z2) / 2 + (y2 * z2) / 3)
+  const py = cube.y * Math.sqrt(1 - (z2+x2) / 2 + (z2 * x2) / 3)
+  const pz = cube.z * Math.sqrt(1 - (x2+y2) / 2 + (x2 * y2) / 3)
+
+  const position = new Vector3(px, py, pz)
+
   
-  return { normal, position: new Vector3(px, py, pz) }
+  // const position = pointOnUnitCube.normalize()
+  
+  return { normal, position }
+}
+
+// -------------------------------------------------------------------------------
+
+export function cubeToCartesian(pointOnUnitCube: Vector3, normal: Vector3, size: Vector2): Vector2 {
+  const gridPos = normalToGrid(normal)
+
+  const p = pointOnUnitCube.addScalar(1).divideScalar(2)
+
+  let percent: Vector2 = new Vector2()
+
+  switch(normalToFace(normal)) {
+    case 0: percent = new Vector2(p.z, p.y); break;
+    case 1: percent = new Vector2(1-p.x, p.y); break;
+    case 2: percent = new Vector2(1-p.z, p.y); break;
+    case 3: percent = new Vector2(p.x, p.y); break;
+    case 4: percent = new Vector2(p.z, 1-p.x); break;
+    case 5: percent = new Vector2(p.z, p.x); break;
+  }
+
+  const gridsize = size.clone().divide(new Vector2(3, 2))
+  const pixelStart = gridPos.clone().multiply(gridsize)
+
+  const pixelExtra = new Vector2(
+    Math.round(percent.x * (gridsize.x - 1)),
+    Math.round(percent.y * (gridsize.y - 1)),
+  )
+
+  return pixelStart.add(pixelExtra)
 }
