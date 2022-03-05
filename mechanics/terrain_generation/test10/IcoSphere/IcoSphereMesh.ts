@@ -1,4 +1,4 @@
-import { Mesh, Vector3, ShaderMaterial, Scene, FloatArray, StandardMaterial, MeshBuilder, Material, MaterialPluginBase, Constants, RegisterMaterialPlugin, Color3, VertexBuffer, PBRMaterial, PBRBaseSimpleMaterial, PBRMetallicRoughnessMaterial, Vector2, RawTexture } from "babylonjs"
+import { Mesh, Vector3, ShaderMaterial, Scene, FloatArray, StandardMaterial, MeshBuilder, Material, MaterialPluginBase, Constants, RegisterMaterialPlugin, Color3, VertexBuffer, PBRMaterial, PBRBaseSimpleMaterial, PBRMetallicRoughnessMaterial, Vector2, RawTexture, NodeMaterial } from "babylonjs"
 import { getDefaultPositionShader, positionShader } from "./positionShader"
 import { GPGPU } from '../lib/GPGPU'
 import { mapValue } from "../lib/Math"
@@ -48,7 +48,6 @@ export class IcoSphereMesh {
 
     const GPGPU = this.GPGPU
     const originalMeshData = this.originalMeshData
-    let colorData = new Float32Array(0)
 
     this.mesh.updateMeshPositions((data) => {
       this.positionShader.uniforms.forEach(uniform => {
@@ -58,8 +57,6 @@ export class IcoSphereMesh {
       GPGPU.draw()
 
       const results = GPGPU.getPixels()
-
-      colorData = new Float32Array(originalMeshData.length)
 
       let max_elevation = Number.MIN_VALUE
       let min_elevation = Number.MAX_VALUE
@@ -75,19 +72,7 @@ export class IcoSphereMesh {
         min_elevation = Math.min(min_elevation, 1/elevation)
       }
 
-      for(let i = 0; i < results.length / 4; i++) {
-        const elevation = results[i*4 + 3]
-
-        colorData[i*4+0] = mapValue(1/elevation, min_elevation, max_elevation, 0, 1)
-        colorData[i*4+1] = 0
-        colorData[i*4+2] = 0
-        colorData[i*4+3] = 1
-      }
     }, true)
-
-    
-    this.mesh.setVerticesData('color', colorData)
-
   }
 
   /** generates a new mesh from scratch */
@@ -95,12 +80,10 @@ export class IcoSphereMesh {
     const mesh = MeshBuilder.CreateIcoSphere('icosphere', {subdivisions: this.resolution, updatable: true}, this.scene)
 
     this.mesh = mesh
-    let colorData = new Float32Array(0)
 
     this.mesh.updateMeshPositions((data) => {
       const dataLength      = data.length / 3 * 4
       this.originalMeshData = new Float32Array(dataLength)
-      colorData = new Float32Array(dataLength)
 
       for (let i = 0; i < data.length / 3; i++) {
         this.originalMeshData[i*4 + 0] = (data[i*3 + 0] + 1) / 2
@@ -108,7 +91,6 @@ export class IcoSphereMesh {
         this.originalMeshData[i*4 + 2] = (data[i*3 + 2] + 1) / 2
 
         this.originalMeshData[i*4 + 3] = 1
-
       }
 
       if(this.meshImageRoot == undefined) {
@@ -139,7 +121,6 @@ export class IcoSphereMesh {
       let max_elevation = Number.MIN_VALUE
       let min_elevation = Number.MAX_VALUE
 
-
       for(let i = 0; i < results.length / 4; i++) {
         const elevation = results[i*4 + 3]
 
@@ -150,19 +131,7 @@ export class IcoSphereMesh {
         max_elevation = Math.max(max_elevation, 1/elevation)
         min_elevation = Math.min(min_elevation, 1/elevation)
       }
-
-      for(let i = 0; i < results.length / 4; i++) {
-        const elevation = results[i*4 + 3]
-
-        colorData[i*4+0] = mapValue(1/elevation, min_elevation, max_elevation, 0, 1)
-        colorData[i*4+1] = 0
-        colorData[i*4+2] = 0
-        colorData[i*4+3] = 1
-      }
     }, true)
-
-    const material = new StandardMaterial('material')
-    this.mesh.material = material
 
     return this.mesh 
   }

@@ -2,8 +2,8 @@ import * as THREE from 'three'
 import { AmbientLight, DataTexture, GridHelper, MeshStandardMaterial, TextureLoader, Vector2 } from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 
-import { Terrestrial1 } from "./PlanetPrefabs/Terrestial1";
-import { PlanetPrefab } from "./PlanetPrefabs/PlanetPrefab";
+// import { Terrestrial1 } from "./PlanetPrefabs/Terrestial1";
+// import { PlanetPrefab } from "./PlanetPrefabs/PlanetPrefab";
 import { CubeSphere } from './Sphere/CubeSphere';
 import { uvToCube } from './Sphere/CubeTexture';
 import { pointToUv, uvToPoint } from './Sphere/WarpTexture';
