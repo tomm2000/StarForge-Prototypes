@@ -28,7 +28,7 @@ yarn generate
 - position shaders can return only the elevation of each given position, reducing by 4 the amount of output data
 
 ## Possible fixes:
-### Equirectangular UV warping:
+### Equirectangular UV warping (no longer used):
 - no fix found
-### Cube mapping seams between faces
+### Cube mapping seams between faces (no longer used):
 - adjacent faces should share pixels where they touch
