@@ -1,5 +1,5 @@
 # Prototypes for a procedural planet generator
-[live demo](tomm2000.github.io/StarForge-Prototypes)
+[live demo](https://tomm2000.github.io/StarForge-Prototypes/)
 
 ## How to compile:
 to run the project in development mode
