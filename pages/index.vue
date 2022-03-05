@@ -1,6 +1,6 @@
 <template>
 <div id="home">
-  <h1>Pototypes for procedural solar system generation</h1>
+  <h1>Prototypes for procedural solar system generation</h1>
   <h3>Source code on github: <a href="https://github.com/tomm2000/StarForge-Prototypes">github</a></h3>
   <h2>3D terrain generation:</h2>
   <ul>
