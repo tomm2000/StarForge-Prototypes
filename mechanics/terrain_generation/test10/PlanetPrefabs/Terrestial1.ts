@@ -2,31 +2,30 @@ import { GUI } from "dat.gui";
 import { Mesh, NodeMaterial, Scene } from "babylonjs";
 import { getPlanetGUI } from "../GUI/SpaceObjectGUI";
 import { IcoSphereMesh } from "../IcoSphere/IcoSphereMesh";
-import { PlanetData } from "../ObjectData/PlanetData";
+import { PlanetData, PlanetDataJson } from "../ObjectData/PlanetData";
 
 import { getDefaultPositionShaderVertex, positionShader } from "../IcoSphere/positionShader";
-import { basicNoiseLayer, erosionNoiseLayer, noise3D } from "../lib/GlslNoise";
-import { NoiseData } from "../ObjectData/NoiseData";
+import { basicNoiseLayer, noise3D } from "../lib/GlslNoise";
+import { noiseId } from "../ObjectData/NoiseData";
 
 export class Terrestrial1 {
   icoSphereMesh: IcoSphereMesh
   planetData: PlanetData
-  gui: GUI
+  private gui: GUI | undefined
   private autoUpdate: boolean = false
   private updateInterval: NodeJS.Timer | undefined
   private scene: Scene;
 
-  constructor(scene: Scene, radius: number = 1) {
+  constructor(scene: Scene, radius: number = 1, planetData: PlanetData = new PlanetData()) {
     this.scene = scene;
 
-    this.planetData = new PlanetData()
+    this.planetData = planetData
 
-    this.gui = getPlanetGUI(this.planetData, this)
+    this.createGui()
 
     this.icoSphereMesh = new IcoSphereMesh(this.scene, undefined, this.getPositionShader())
 
-    // https://nme.babylonjs.com/#XRRVZX#6
-    NodeMaterial.ParseFromSnippetAsync('XRRVZX#6', this.scene).then(nodeMaterial => {
+    NodeMaterial.ParseFromSnippetAsync(this.planetData.getData().materialId, this.scene).then(nodeMaterial => {
       this.icoSphereMesh.setMaterial(nodeMaterial)
     })
 
@@ -35,6 +34,16 @@ export class Terrestrial1 {
         this.reload()
       }
     }, 16)
+  }
+
+  createGui() { this.gui = getPlanetGUI(this.planetData, this) }
+  destroyGui() { this.gui?.destroy() }
+  reloadGui() { this.destroyGui(); this.createGui() }
+
+  setPlanetData(planetData: PlanetDataJson) {
+    this.planetData.setData(planetData)
+    this.reloadGui()
+    this.reload()
   }
 
   reload() {
@@ -47,7 +56,7 @@ export class Terrestrial1 {
   dispose() {
     if(this.updateInterval) { clearInterval(this.updateInterval) }
     this.icoSphereMesh.dispose()
-    this.gui.destroy()
+    this.gui?.destroy()
   }
 
   getPositionShader(): positionShader {
@@ -59,6 +68,7 @@ export class Terrestrial1 {
       uniform float radius;
       uniform int debugNoise;
       uniform int layerAmount;
+      uniform int seed;
 
       uniform float layerAmplitude[MAX_LAYERS];
       uniform int layerUsePrev[MAX_LAYERS];
@@ -79,7 +89,6 @@ export class Terrestrial1 {
       ${noise3D}
 
       ${basicNoiseLayer}
-      ${erosionNoiseLayer}
 
       void main() {
         // restoring data from [0,1] -> [0,2] -> [-1,1]
@@ -101,7 +110,7 @@ export class Terrestrial1 {
           // ---- noise generation
           float level_elevation = 1.0;
 
-          level_elevation = basicNoiseLayer(layerMinHeight[i], layerAmplitude[i], layerScale[i], layerLacunarity[i], layerPersistance[i], layerExponent[i], layerOctaves[i], mask, position.xyz);
+          level_elevation = basicNoiseLayer(layerMinHeight[i], layerAmplitude[i], layerScale[i], layerLacunarity[i], layerPersistance[i], layerExponent[i], layerOctaves[i], mask, position.xyz, seed + i);
           // ---------------------
 
           // ---- mask and elevation finalization
@@ -131,25 +140,27 @@ export class Terrestrial1 {
     const shader: positionShader = getDefaultPositionShaderVertex(fs)
 
     shader.uniforms = [
-      {name: 'radius'        , type: 'uniform1f' , value: this.planetData.radius},
-      {name: 'debugNoise'    , type: 'uniform1i' , value: this.planetData.debugNoise ? 1 : 0},
-      {name: 'layerAmount'   , type: 'uniform1i', value: this.planetData.noiseLayers.length},
+      {name: 'radius'      , type: 'uniform1f', value: this.planetData.getData().radius},
+      {name: 'debugNoise'  , type: 'uniform1i', value: this.planetData.getData().debugNoise ? 1 : 0},
+      {name: 'layerAmount' , type: 'uniform1i', value: this.planetData.getData().noiseLayers.length},
+      {name: 'seed'        , type: 'uniform1i', value: this.planetData.getData().seed},
     ]
 
-    if(this.planetData.noiseLayers.length > 0) {
+    if(this.planetData.getData().noiseLayers.length > 0) {
+
       shader.uniforms = [...shader.uniforms,
-        {name: 'layerAmplitude',      type: 'uniform1fv', value: this.planetData.noiseLayers.map(layer => layer.amplitude)},
-        {name: 'layerUsePrev'  ,      type: 'uniform1iv', value: this.planetData.noiseLayers.map(layer => layer.usePrevLayerAsMask  ? 1 : 0)},
-        {name: 'layerUseFirst' ,      type: 'uniform1iv', value: this.planetData.noiseLayers.map(layer => layer.useFirstLayerAsMask ? 1 : 0)},
-        {name: 'layerMaskOnly' ,      type: 'uniform1iv', value: this.planetData.noiseLayers.map(layer => layer.maskOnly ? 1 : 0)},
-        {name: 'layerScale'   ,       type: 'uniform1fv', value: this.planetData.noiseLayers.map(layer => layer.scale)},
-        {name: 'layerMinHeight',      type: 'uniform1fv', value: this.planetData.noiseLayers.map(layer => layer.minHeight)},
-        {name: 'layerNoiseType',      type: 'uniform1iv', value: this.planetData.noiseLayers.map(layer => layer.getNoiseId())},
-        {name: 'layerMaskMultiplier', type: 'uniform1fv', value: this.planetData.noiseLayers.map(layer => layer.maskMultiplier)},
-        {name: 'layerOctaves',        type: 'uniform1iv', value: this.planetData.noiseLayers.map(layer => layer.octaves)},
-        {name: 'layerPersistance',    type: 'uniform1fv', value: this.planetData.noiseLayers.map(layer => layer.persistance)},
-        {name: 'layerLacunarity',     type: 'uniform1fv', value: this.planetData.noiseLayers.map(layer => layer.lacunarity)},
-        {name: 'layerExponent',       type: 'uniform1iv', value: this.planetData.noiseLayers.map(layer => layer.exponent)},
+        {name: 'layerAmplitude',      type: 'uniform1fv', value: this.planetData.getData().noiseLayers.map(layer => layer.amplitude)},
+        {name: 'layerUsePrev'  ,      type: 'uniform1iv', value: this.planetData.getData().noiseLayers.map(layer => layer.usePrevLayerAsMask  ? 1 : 0)},
+        {name: 'layerUseFirst' ,      type: 'uniform1iv', value: this.planetData.getData().noiseLayers.map(layer => layer.useFirstLayerAsMask ? 1 : 0)},
+        {name: 'layerMaskOnly' ,      type: 'uniform1iv', value: this.planetData.getData().noiseLayers.map(layer => layer.maskOnly ? 1 : 0)},
+        {name: 'layerScale'   ,       type: 'uniform1fv', value: this.planetData.getData().noiseLayers.map(layer => layer.scale)},
+        {name: 'layerMinHeight',      type: 'uniform1fv', value: this.planetData.getData().noiseLayers.map(layer => layer.minHeight)},
+        {name: 'layerNoiseType',      type: 'uniform1iv', value: this.planetData.getData().noiseLayers.map(layer => noiseId(layer.noiseType))},
+        {name: 'layerMaskMultiplier', type: 'uniform1fv', value: this.planetData.getData().noiseLayers.map(layer => layer.maskMultiplier)},
+        {name: 'layerOctaves',        type: 'uniform1iv', value: this.planetData.getData().noiseLayers.map(layer => layer.octaves)},
+        {name: 'layerPersistance',    type: 'uniform1fv', value: this.planetData.getData().noiseLayers.map(layer => layer.persistance)},
+        {name: 'layerLacunarity',     type: 'uniform1fv', value: this.planetData.getData().noiseLayers.map(layer => layer.lacunarity)},
+        {name: 'layerExponent',       type: 'uniform1iv', value: this.planetData.getData().noiseLayers.map(layer => layer.exponent)},
       ]
     }
 

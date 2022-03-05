@@ -74,7 +74,8 @@ float basicNoiseLayer(
   int exponent,
   int octaves,
   float mask,
-  vec3 position
+  vec3 position,
+  int seed
 ) {
   const int MAX_OCTAVES = 32;
 
@@ -91,7 +92,7 @@ float basicNoiseLayer(
     vec3 v = start_pos * frequency;
     vec3 p = vec3(0.0);
     vec3 g;
-    float alpha = 1.0;
+    float alpha = 1.0 * float(seed);
 
     float noise_value = 0.5 + 0.5 * psrdnoise(v, p, alpha, g);
     total_elevation += noise_value * ampl;
@@ -108,31 +109,5 @@ float basicNoiseLayer(
   total_elevation = pow(total_elevation, float(exponent));
 
   return total_elevation * mask;
-}
-`
-
-export const erosionNoiseLayer = /*glsl*/`
-float erosionNoiseLayer(
-  float minHeight,
-  float amplitude,
-  float scale,
-  float mask,
-  vec3 position
-) {
-  vec3 v = scale * position.xyz;
-  vec3 p = vec3(0.0);
-  vec3 g;
-  float alpha = 1.0;
-  
-  float elevation = 0.5 + 0.5 * psrdnoise(v, p, alpha, g);
-
-  elevation = (elevation + 1.0) / 2.0 * amplitude;
-
-  elevation = 1.0 - abs(elevation);
-  elevation *= elevation;
-  
-  elevation = max(0.0, elevation - minHeight);
-
-  return elevation * mask;
 }
 `

@@ -15,7 +15,7 @@ export class IcoSphereMesh {
   private meshImageRoot: number | undefined
   private originalMeshData: Float32Array | undefined
 
-  constructor(scene: Scene, resolution: number = 32, positionShader: positionShader = defaultPositionShader) {
+  constructor(scene: Scene, resolution: number = 64, positionShader: positionShader = defaultPositionShader) {
     this.positionShader = positionShader;
     this.resolution = resolution
     this.scene = scene

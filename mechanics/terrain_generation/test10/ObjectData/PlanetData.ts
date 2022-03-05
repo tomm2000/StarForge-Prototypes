@@ -1,81 +1,94 @@
 import { GUI } from "dat.gui";
-import { NoiseData, NoiseDataJson } from "./NoiseData";
+import { download } from "../lib/downloader";
+import { addNoiseLayerGui, defaultNoiseData, NoiseDataJson } from "./NoiseData";
 
 export type PlanetTypes = 'terrestrial1'
 
 export const planetTypeList: PlanetTypes[] = ['terrestrial1']
 
-type PlanetDataJson = {
+export type PlanetDataJson = {
   type: PlanetTypes
   radius: number
   globalMinHeight: number
   seed: number
   noiseLayers: NoiseDataJson[]
   debugNoise: boolean
+  materialId: string
 }
 
 export class PlanetData {
-  type: PlanetTypes = 'terrestrial1'
-  radius: number = 1
-  globalMinHeight: number = 0
-  seed: number = Math.floor(Math.random() * 9999)
-  noiseLayers: NoiseData[] = []
-  debugNoise: boolean = false
+  private data: PlanetDataJson = {
+    type: 'terrestrial1',
+    radius: 1,
+    globalMinHeight: 0,
+    seed: Math.floor(Math.random() * 9999),
+    noiseLayers: [],
+    debugNoise: false,
+    // https://nme.babylonjs.com/#XRRVZX#6
+    materialId: 'XRRVZX#6'
+  }
 
   private gui: GUI | undefined
   private noise_folder: GUI | undefined
 
-  constructor() {}
+  constructor(data: PlanetDataJson | undefined = undefined) {
+    if(data) {
+      this.data = data
+    }
+  }
+
+  getData() { return this.data }
+  setData(data: PlanetDataJson) {
+    this.data = data
+  }
 
   addNoiseLayer(): void {
-    const index = this.noiseLayers.length
+    let index = this.data.noiseLayers.length
 
-    this.noiseLayers.push(
-      new NoiseData(() => {
-        this.noiseLayers.splice(index, 1)
-        this.updateNoiseFolder()
-    }))
+    this.data.noiseLayers.push(defaultNoiseData(index))
 
     this.updateNoiseFolder()
   }
 
-  updateNoiseFolder() {
+  removeNoiseLayer(layer: NoiseDataJson): void {
+    // console.log(index)
+    let index = this.data.noiseLayers.indexOf(layer)
+    this.data.noiseLayers.splice(index, 1)
+
+    this.updateNoiseFolder()
+  }
+
+  private updateNoiseFolder() {
     if(!this.gui) { return }
     if(this.noise_folder) { this.gui.removeFolder(this.noise_folder) }
     
     this.noise_folder = this.gui.addFolder('noise layers')
-    this.noise_folder.add(this, 'debugNoise')
+    this.noise_folder.add(this.data, 'debugNoise')
 
-    let index = 0
-    for(let layer of this.noiseLayers) {
-      layer.addGuiFolder(this.noise_folder, `layer [${index}]`)
-      index++
+    for(let layer of this.data.noiseLayers) {
+      let layer_folder = addNoiseLayerGui(layer, this.noise_folder, `layer [${layer.index}]`)
+
+      const removeLayer = this.removeNoiseLayer.bind(this)
+
+      layer_folder.add({ remove: () => {
+        removeLayer(layer)
+      } }, 'remove')
     }
   }
 
-  addGuiFolder(gui: GUI) {
+  generateGuiFolder(gui: GUI) {
     this.gui = gui
 
     const folder = gui.addFolder('planet data')
-    folder.add(this, 'radius', 0.1, 2, 0.01)
+    folder.add(this.data, 'radius', 0.1, 2, 0.01)
     // folder.add(this, 'globalMinHeight', -1, 1, 0.001)
-    folder.add(this, 'seed', 0, 9999)
+    folder.add(this.data, 'seed', 0, 9999)
     folder.add(this, 'addNoiseLayer')
-    folder.add(this, 'printJson')
+
+    this.updateNoiseFolder()
   }
 
-  getJson() {
-    const { type, radius, globalMinHeight, seed, noiseLayers, debugNoise } = this
-
-    const noiseLayersJson = noiseLayers.map(layer => layer.getJson())
-
-    const data = { type, radius, globalMinHeight, seed, noiseLayers: noiseLayersJson , debugNoise }
-    return data
+  downloadJson() {
+    download('planet_data.json', JSON.stringify(this.getData()))
   }
-
-  printJson() {
-    console.log(JSON.stringify(this.getJson()))
-  }
-
-
 }

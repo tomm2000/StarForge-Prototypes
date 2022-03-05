@@ -8,8 +8,9 @@ export function getPlanetGUI(planetData: PlanetData, planet: any): GUI {
 
   gui.add(planet, 'reload')
   gui.add(planet, 'autoUpdate')
+  gui.add(planetData, 'downloadJson')
 
-  planetData.addGuiFolder(gui)
+  planetData.generateGuiFolder(gui)
   
   gui.close()
 
