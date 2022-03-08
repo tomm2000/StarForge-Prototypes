@@ -72,6 +72,9 @@ export class Universe {
       scene
     );
 
+    camera.wheelDeltaPercentage = 0.01
+    camera.minZ = 0
+
     // Target the camera to scene origin
     camera.setTarget(Vector3.Zero());
     

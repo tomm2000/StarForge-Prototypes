@@ -14,6 +14,7 @@ export type PlanetDataJson = {
   noiseLayers: NoiseDataJson[]
   debugNoise: boolean
   materialId: string
+  materialHeightMultiplier: number
 }
 
 export class PlanetData {
@@ -24,8 +25,9 @@ export class PlanetData {
     seed: Math.floor(Math.random() * 9999),
     noiseLayers: [],
     debugNoise: false,
-    // https://nme.babylonjs.com/#XRRVZX#6
-    materialId: 'XRRVZX#6'
+    // https://nme.babylonjs.com/#XRRVZX#49
+    materialId: 'XRRVZX#49',
+    materialHeightMultiplier: 1,
   }
 
   private gui: GUI | undefined
@@ -83,6 +85,7 @@ export class PlanetData {
     folder.add(this.data, 'radius', 0.1, 2, 0.01)
     // folder.add(this, 'globalMinHeight', -1, 1, 0.001)
     folder.add(this.data, 'seed', 0, 9999)
+    folder.add(this.data, 'materialHeightMultiplier', 0, 1, 0.01)
     folder.add(this, 'addNoiseLayer')
 
     this.updateNoiseFolder()

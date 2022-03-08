@@ -1,5 +1,5 @@
 import { GUI } from "dat.gui";
-import { Mesh, NodeMaterial, Scene } from "babylonjs";
+import { InputBlock, Mesh, NodeMaterial, Scene } from "babylonjs";
 import { getPlanetGUI } from "../GUI/SpaceObjectGUI";
 import { IcoSphereMesh } from "../IcoSphere/IcoSphereMesh";
 import { PlanetData, PlanetDataJson } from "../ObjectData/PlanetData";
@@ -7,6 +7,7 @@ import { PlanetData, PlanetDataJson } from "../ObjectData/PlanetData";
 import { getDefaultPositionShaderVertex, positionShader } from "../IcoSphere/positionShader";
 import { basicNoiseLayer, noise3D } from "../lib/GlslNoise";
 import { noiseId } from "../ObjectData/NoiseData";
+import { setNMInputValue } from "../lib/nodeMaterial";
 
 export class Terrestrial1 {
   icoSphereMesh: IcoSphereMesh
@@ -26,8 +27,17 @@ export class Terrestrial1 {
     this.icoSphereMesh = new IcoSphereMesh(this.scene, undefined, this.getPositionShader())
 
     NodeMaterial.ParseFromSnippetAsync(this.planetData.getData().materialId, this.scene).then(nodeMaterial => {
+      setNMInputValue(this.icoSphereMesh.getMaterial(), 'INheightMultiplier', this.planetData.getData().materialHeightMultiplier)
+      // setNMInputValue(this.icoSphereMesh.getMaterial(), 'INheightMultiplier', this.planetData.getData().materialHeightMultiplier)
+      // setNMInputValue(this.icoSphereMesh.getMaterial(), 'INminHeight', 1)
+      // setNMInputValue(this.icoSphereMesh.getMaterial(), 'INmaxHeight', 2)
+
       this.icoSphereMesh.setMaterial(nodeMaterial)
+
+      this.reload()
     })
+
+
 
     this.updateInterval = setInterval(() => {
       if(this.autoUpdate) {
@@ -49,6 +59,11 @@ export class Terrestrial1 {
   reload() {
     this.icoSphereMesh.setPositionShader(this.getPositionShader())
     this.icoSphereMesh.updateMesh()
+
+    setNMInputValue(this.icoSphereMesh.getMaterial(), 'INheightMultiplier', this.planetData.getData().materialHeightMultiplier)
+    // setNMInputValue(this.icoSphereMesh.getMaterial(), 'INheightMultiplier', this.planetData.getData().materialHeightMultiplier)
+    setNMInputValue(this.icoSphereMesh.getMaterial(), 'INminHeight', this.icoSphereMesh.minHeight)
+    setNMInputValue(this.icoSphereMesh.getMaterial(), 'INmaxHeight', this.icoSphereMesh.maxHeight)
   }
   
   getMesh(): Mesh { return this.icoSphereMesh.getMesh() }

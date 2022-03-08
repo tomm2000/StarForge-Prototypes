@@ -92,9 +92,11 @@ export class IcoSphereMesh {
 
   /** generates a new mesh from scratch */
   generateNewMesh(): Mesh {
-    const mesh = MeshBuilder.CreateIcoSphere('icosphere', {subdivisions: this.resolution, updatable: true}, this.scene)
+    const mesh = MeshBuilder.CreateIcoSphere('icosphere', {subdivisions: this.resolution, updatable: true, flat: false}, this.scene)
 
     this.mesh = mesh
+
+    
     let colorData = new Float32Array(0)
 
     this.mesh.updateMeshPositions((data) => {

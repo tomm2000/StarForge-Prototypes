@@ -1,4 +1,4 @@
-import { Mesh, Vector3, ShaderMaterial, Scene, FloatArray, StandardMaterial, MeshBuilder, Material, MaterialPluginBase, Constants, RegisterMaterialPlugin, Color3, VertexBuffer, PBRMaterial, PBRBaseSimpleMaterial, PBRMetallicRoughnessMaterial, Vector2, RawTexture, NodeMaterial } from "babylonjs"
+import { Mesh, Vector3, ShaderMaterial, Scene, FloatArray, StandardMaterial, MeshBuilder, Material, MaterialPluginBase, Constants, RegisterMaterialPlugin, Color3, VertexBuffer, PBRMaterial, PBRBaseSimpleMaterial, PBRMetallicRoughnessMaterial, Vector2, RawTexture, NodeMaterial, InputBlock } from "babylonjs"
 import { getDefaultPositionShader, positionShader } from "./positionShader"
 import { GPGPU } from '../lib/GPGPU'
 import { mapValue } from "../lib/Math"
@@ -14,6 +14,8 @@ export class IcoSphereMesh {
   private GPGPU: GPGPU | undefined
   private meshImageRoot: number | undefined
   private originalMeshData: Float32Array | undefined
+  minHeight: number = 0
+  maxHeight: number = 0
 
   constructor(scene: Scene, resolution: number = 64, positionShader: positionShader = defaultPositionShader) {
     this.positionShader = positionShader;
@@ -71,15 +73,21 @@ export class IcoSphereMesh {
         max_elevation = Math.max(max_elevation, 1/elevation)
         min_elevation = Math.min(min_elevation, 1/elevation)
       }
+      
+      this.minHeight = min_elevation
+      this.maxHeight = max_elevation
 
     }, true)
   }
 
   /** generates a new mesh from scratch */
   generateNewMesh(): Mesh {
-    const mesh = MeshBuilder.CreateIcoSphere('icosphere', {subdivisions: this.resolution, updatable: true}, this.scene)
+    const mesh = MeshBuilder.CreateIcoSphere('icosphere', {subdivisions: this.resolution, updatable: true, flat: false}, this.scene)
 
     this.mesh = mesh
+
+    /* along with 'flat: false', disables low poly */
+    this.mesh.forceSharedVertices()
 
     this.mesh.updateMeshPositions((data) => {
       const dataLength      = data.length / 3 * 4
@@ -131,7 +139,12 @@ export class IcoSphereMesh {
         max_elevation = Math.max(max_elevation, 1/elevation)
         min_elevation = Math.min(min_elevation, 1/elevation)
       }
+
+      this.minHeight = min_elevation
+      this.maxHeight = max_elevation
+      
     }, true)
+
 
     return this.mesh 
   }

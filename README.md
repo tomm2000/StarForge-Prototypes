@@ -61,7 +61,7 @@ yarn generate
 - terrain generated from 2d texture
 ### **version 10 (babylonjs):**
 - custom PBR node material
-- advanced noise features (lacunarity, persistance, octaves, exponent)
+- more advanced noise features (lacunarity, persistance, octaves, exponent)
 - noise seed, different seeds for noise layers
 - planet loading from json
 - planet downloading to json
