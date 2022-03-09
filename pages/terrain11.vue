@@ -16,7 +16,7 @@
 <script lang="ts">
 import Vue from 'vue'
 import { Universe } from '@/mechanics/terrain_generation/test11/Universe'
-import { PlanetDataJson } from '~/mechanics/terrain_generation/test11/PlanetData/PlanetData';
+import { PlanetDataJson } from '~/mechanics/terrain_generation/test11/common/PlanetData/PlanetDataJson';
 
 type component_data = {
   universe: Universe | undefined
