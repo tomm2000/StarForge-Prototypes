@@ -14,6 +14,7 @@
     <li><router-link to="/terrain8">terrain 8 (Texture mapping)</router-link></li>
     <li><router-link to="/terrain9">terrain 9 (Texture mapping + ThreeJS)</router-link></li>
     <li><router-link to="/terrain10">terrain 10 (Babylon + Node PBR)</router-link></li>
+    <li><router-link to="/terrain11">terrain 11 (Advanced noise)</router-link></li>
     <!-- <li><router-link to="/system1">system 1</router-link></li> -->
   </ul>
 </div>

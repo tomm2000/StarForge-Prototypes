@@ -65,3 +65,7 @@ yarn generate
 - noise seed, different seeds for noise layers
 - planet loading from json
 - planet downloading to json
+### **version 11 (babylonjs):**
+- reworked noise system
+- reworked ui
+- separated editor functionality (ui) from visuals
