@@ -76,10 +76,7 @@ export class GPGPU {
       this.height = gl.drawingBufferHeight
       this.width = gl.drawingBufferWidth
     } else {
-      const canvas = document.createElement("canvas")
-      canvas.width = width
-      canvas.height = height
-      this.gl = canvas.getContext("webgl", { premultipliedAlpha: false })!
+      this.gl = GPGPU.createWebglContext(width, height)
     }
 
     const textureFloat = this.gl.getExtension("OES_texture_float")
@@ -87,6 +84,13 @@ export class GPGPU {
     if (!textureFloat) {
       alert("Floating point textures not supported")
     }
+  }
+
+  static createWebglContext(width: number, height: number): WebGLRenderingContext {
+    const canvas = document.createElement("canvas")
+    canvas.width = width
+    canvas.height = height
+    return canvas.getContext("webgl", { premultipliedAlpha: false })!
   }
 
   makeTexture(data: Float32Array, width = this.width, height = this.height) {
@@ -216,7 +220,6 @@ export class GPGPU {
 
   getPixels(startX = 0, startY = 0, spanX = this.width - startX, spanY = this.height - startY) {
     const buffer = new Float32Array(spanX * spanY * 4)
-
     this.gl.readPixels(startX, startY, spanX, spanY, this.gl.RGBA, this.gl.FLOAT, buffer)
     return buffer
   }

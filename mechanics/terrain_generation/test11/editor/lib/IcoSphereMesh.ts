@@ -5,7 +5,7 @@ import { mapValue } from "../../common/lib/Math"
 
 export class IcoSphereMesh {
   //---- mesh --------------
-  private resolution: number = 10
+  private resolution: number
   private mesh: Mesh | undefined
   private meshTextureDimension: number | undefined
   private originalMeshData: Float32Array | undefined
