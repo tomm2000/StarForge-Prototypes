@@ -46,7 +46,7 @@ export function getDefaultPositionShader(): positionShader {
       void main() {
         gl_FragColor = texture2D(texture, vTextureCoord);
         // gl_FragColor = vec4(vTextureCoord, 0.3, 0.3);
-        // gl_FragColor = vec4(vPosition, 2.0);
+        // gl_FragColor = vec4(-2.0, 2.0, -2.0, 2.0);
       }
     `,
     uniforms: []

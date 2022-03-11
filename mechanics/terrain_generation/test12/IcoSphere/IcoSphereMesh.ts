@@ -1,6 +1,6 @@
 import { Mesh, Scene, MeshBuilder, Material, } from "babylonjs"
-import { GPGPU } from "../lib/GPGPU"
-import { ElevationData, GPUSpecs, NoiseLayer } from '../ObjectData/Noise/NoiseType'
+import { NoiseController } from "../ObjectData/Noise/NoiseController"
+import { GPUSpecs, NoiseLayer } from '../ObjectData/Noise/NoiseType'
 
 export class IcoSphereMesh {
   private resolution: number = 10
@@ -8,66 +8,69 @@ export class IcoSphereMesh {
   private material: Material | undefined
   private scene: Scene
   private meshImageRoot: number | undefined
-  private originalMeshData: Float32Array | undefined
-  private noise_layers: NoiseLayer[]
+  private originalPositionData:  Float32Array | undefined
+  private originalElevationData: Float32Array | undefined
+  private noise_controller: NoiseController
   private gpu_init: GPUSpecs | undefined
-  minHeight: number = 0
-  maxHeight: number = 0
+  private minHeight: number = 0
+  private maxHeight: number = 0
 
-  constructor(scene: Scene, resolution: number = 64, noise_layers: NoiseLayer[] = []) {
-    this.noise_layers = noise_layers
+  constructor(scene: Scene, resolution: number = 1, noise_controller: NoiseController) {
+    this.noise_controller = noise_controller
     this.resolution = resolution
     this.scene = scene
     this.mesh = this.generateNewMesh()
   }
 
+  //---- getters & setters ----
+  getMinHeight() { return this.minHeight }
+  getMaxHeight() { return this.maxHeight }
+
   getResolution(): number { return this.resolution }
-  /** sets the new resolution, DOES regenerate the mesh! */
+  /** sets the new resolution, **DOES** regenerate the mesh! */
   setResolution(resolution: number): void {
     this.resolution = resolution
     this.generateNewMesh()
   }
 
   getMaterial(): Material | undefined { return this.material }
-  // /** sets the new material, does NOT regenerate the mesh! */
+  /** sets the new material, does **NOT** regenerate the mesh! */
   setMaterial(material: Material): void {
     this.material = material
     this.mesh.material = this.material
   }
+  //---------------------------
 
-  /** updates the position of the points on the object, does NOT generate a new geometry (resolution changes have no effect!) */
+  /** updates the position of the points on the object, does **NOT** generate a new geometry (resolution changes have no effect!) */
   updateMesh(): void {
-    if(!this.mesh || !this.originalMeshData || !this.gpu_init) { return }
+    if(!this.mesh || !this.originalPositionData || !this.originalElevationData || !this.gpu_init) { return }
 
-    const {originalMeshData, gpu_init } = this
+    const {originalPositionData, originalElevationData } = this
 
     this.mesh.updateMeshPositions((data) => {
 
-      let elevation_data: ElevationData = {
-        total_layer: originalMeshData.slice(),
-        first_layer: originalMeshData.slice(),
-        base_layer: originalMeshData
+      if(this.noise_controller.isElevationDataInitialized()) {
+        this.noise_controller.applyLayers()
+      } else {
+        this.noise_controller.applyLayers(
+          originalElevationData.slice(),
+          originalPositionData.slice() 
+        )
       }
 
-      //---- gpu initializations & application --------
-      for(let layer of this.noise_layers) {
-        if(!layer.isInitialized()) { layer.initGPU(gpu_init) }
+      const results = this.noise_controller.getLayerData()
 
-        elevation_data = layer.applyNoise(elevation_data)
-      }
-      //-----------------------------------------------
-
-      const results = elevation_data.total_layer
+      console.log(results)
 
       let max_elevation = Number.MIN_VALUE
       let min_elevation = Number.MAX_VALUE
 
       for(let i = 0; i < results.length / 4; i++) {
-        const elevation = 1 / results[i*4 + 3]
+        const elevation = results[i*4 + 3]
 
-        data[i*3 + 0] = (originalMeshData[i*4 + 0] * 2 - 1) * elevation
-        data[i*3 + 1] = (originalMeshData[i*4 + 1] * 2 - 1) * elevation
-        data[i*3 + 2] = (originalMeshData[i*4 + 2] * 2 - 1) * elevation
+        data[i*3 + 0] = originalPositionData[i*4 + 0] * elevation
+        data[i*3 + 1] = originalPositionData[i*4 + 1] * elevation
+        data[i*3 + 2] = originalPositionData[i*4 + 2] * elevation
 
         max_elevation = Math.max(max_elevation, elevation)
         min_elevation = Math.min(min_elevation, elevation)
@@ -80,77 +83,60 @@ export class IcoSphereMesh {
 
   /** generates a new mesh from scratch */
   generateNewMesh(): Mesh {
-    const mesh = MeshBuilder.CreateIcoSphere('icosphere', {subdivisions: this.resolution, updatable: true, flat: false}, this.scene)
-
-    this.mesh = mesh
+    this.mesh = MeshBuilder.CreateIcoSphere('icosphere', {subdivisions: this.resolution, updatable: true, flat: false}, this.scene)
 
     /* along with 'flat: false', disables low poly */
     this.mesh.forceSharedVertices()
 
-    this.mesh.updateMeshPositions((data) => {
-      const dataLength      = data.length / 3 * 4
-      this.originalMeshData = new Float32Array(dataLength)
+    const data = this.mesh.getVerticesData('position')
 
-      for (let i = 0; i < data.length / 3; i++) {
-        this.originalMeshData[i*4 + 0] = (data[i*3 + 0] + 1) / 2
-        this.originalMeshData[i*4 + 1] = (data[i*3 + 1] + 1) / 2
-        this.originalMeshData[i*4 + 2] = (data[i*3 + 2] + 1) / 2
+    if(!data) { throw 'error in the mesh position data!' }
 
-        this.originalMeshData[i*4 + 3] = 1
-      }
+    //---- original mesh data initialization ----
+    const dataLength = data.length / 3 * 4
+    this.originalPositionData  = new Float32Array(dataLength)
+    this.originalElevationData = new Float32Array(dataLength)
 
-      if(this.meshImageRoot == undefined) {
-        let size = Math.floor(Math.sqrt(dataLength / 4))
-        while((dataLength / 4) %size != 0) {
-          size -= 1
-        }
-        this.meshImageRoot = size
-      }
+    for (let i = 0; i < data.length / 3; i++) {
+      this.originalPositionData[i*4 + 0] = data[i*3 + 0]
+      this.originalPositionData[i*4 + 1] = data[i*3 + 1]
+      this.originalPositionData[i*4 + 2] = data[i*3 + 2]
 
-      let elevation_data: ElevationData = {
-        total_layer: this.originalMeshData.slice(),
-        first_layer: this.originalMeshData.slice(),
-        base_layer: this.originalMeshData
-      }
+      // this.originalPositionData[i*4 + 3] = 0
 
-      //---- gpu initializations & application --------
-      const w = dataLength / 4 / this.meshImageRoot
-      const h = this.meshImageRoot
 
-      this.gpu_init = { width: w, height: h/*, gl: GPGPU.createWebglContext(w, h) */}
+      // this.originalElevationData[i*4 + 0] = 1
+      // this.originalElevationData[i*4 + 1] = 1
 
-      for(let layer of this.noise_layers) {
-        layer.initGPU(this.gpu_init)
-        elevation_data = layer.applyNoise(elevation_data)
-      }
-      //-----------------------------------------------
+      this.originalElevationData[i*4 + 2] = 1
+      this.originalElevationData[i*4 + 3] = 1
+    }
+    //-------------------------------------------
 
-      const results = elevation_data.total_layer
+    //---- texture size calculation (closest dimension to a perfect square) ----
+    let size = Math.floor(Math.sqrt(dataLength / 4))
+    while((dataLength / 4) %size != 0) { size -= 1 }
+    this.meshImageRoot = size
+    //--------------------------------------------------------------------------
 
-      let max_elevation = Number.MIN_VALUE
-      let min_elevation = Number.MAX_VALUE
+    //---- gpu initializations & application --------
+    //REVIEW: find a way to use a single webgl context
+    this.gpu_init = {
+      width: dataLength / 4 / this.meshImageRoot,
+      height: this.meshImageRoot,
+      /*, gl: GPGPU.createWebglContext(w, h) */
+    }
 
-      for(let i = 0; i < results.length / 4; i++) {
-        const elevation = 1 / results[i*4 + 3]
+    this.noise_controller.setGPUSpecs(this.gpu_init)
+    //-----------------------------------------------
 
-        data[i*3 + 0] = (this.originalMeshData[i*4 + 0] * 2 - 1) * elevation
-        data[i*3 + 1] = (this.originalMeshData[i*4 + 1] * 2 - 1) * elevation
-        data[i*3 + 2] = (this.originalMeshData[i*4 + 2] * 2 - 1) * elevation
-
-        max_elevation = Math.max(max_elevation, elevation)
-        min_elevation = Math.min(min_elevation, elevation)
-      }
-
-      this.minHeight = min_elevation
-      this.maxHeight = max_elevation
-      
-    }, true)
+    this.updateMesh()
 
     return this.mesh 
   }
 
   dispose() {
     this.mesh.dispose()
-    this.noise_layers.forEach(layer => layer.dispose()) 
+    this.noise_controller.dispose()
   }
 }

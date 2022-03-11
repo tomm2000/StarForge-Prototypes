@@ -26,6 +26,7 @@ yarn generate
 ## Todo:
 ### Optimization:
 - position shaders can return only the elevation of each given position, reducing by 4 the amount of output data
+- the position shaders can be compiled once for each type of noise, then reused if multiple instances of that noise exist
 
 ## Possible fixes:
 ### Equirectangular UV warping (no longer used):

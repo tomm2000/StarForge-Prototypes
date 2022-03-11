@@ -4,6 +4,7 @@ import { noise3D } from "../../lib/GlslNoise";
 import { GPGPUuniform } from "../../lib/GPGPU";
 import { PlanetData } from "../PlanetData";
 import { GPUSpecs, NoiseLayer } from "./NoiseType";
+import { NoiseController } from "./NoiseController";
 
 export class BasicNoise extends NoiseLayer {
   private amplitude: number = 1
@@ -12,9 +13,8 @@ export class BasicNoise extends NoiseLayer {
   private persistance: number = 0.5
   private lacunarity: number = 2
 
-
-  constructor(gpuSpecs: GPUSpecs | undefined = undefined, parent: PlanetData, index: number) {
-    super(gpuSpecs, parent, index)
+  constructor(gpuSpecs: GPUSpecs | undefined = undefined, controller: NoiseController, index: number) {
+    super(gpuSpecs, controller, index)
 
     this._noiseType = 'basic'
   } 
@@ -33,7 +33,7 @@ export class BasicNoise extends NoiseLayer {
     ]
   }
 
-  generateGui(gui: GUI = new GUI()): GUI {
+  generateGui(gui: GUI): GUI {
     gui = super.generateGui(gui)
 
     gui.add(this, 'amplitude', -1, 1, 0.01)
@@ -55,9 +55,8 @@ uniform int octaves;
 uniform float persistance;
 uniform float lacunarity;
 
-uniform sampler2D texture0; // base position
-uniform sampler2D texture1; // total elevation
-uniform sampler2D texture2; // first elevation
+uniform sampler2D texture0; // position
+uniform sampler2D texture1; // elevation (/,/,prev,tot)
 varying vec2 vTextureCoord;
 
 ${noise3D}
@@ -66,11 +65,12 @@ const int MAX_OCTAVES = 32;
 
 void main() {
   //---- restoring data from [0,1] -> [0,2] -> [-1,1] ----
-  vec4 position = (texture2D(texture0, vTextureCoord) * 2.0) - 1.0;
+  vec4 position = texture2D(texture0, vTextureCoord);
+  vec4 prev_elevation = texture2D(texture1, vTextureCoord);
   //------------------------------------------------------
 
 //NOTE: all the elevation values start from 1 instead of 0! subract 1 for masks!
-  float total_elevation = 1.0;
+  float total_elevation = 0.0;
   float oct_amplitude = amplitude;
   float oct_frequency = frequency;
 
@@ -90,9 +90,13 @@ void main() {
   }
 
   //---- normalizing data from [-1,1] -> [0,2] -> [0,1] ----
-  vec3 pos = (position.xyz + 1.0) / 2.0;
+  vec3 pos = position.xyz;
   //--------------------------------------------------------
 
-  gl_FragColor = vec4(pos, 1.0 / total_elevation);
+  gl_FragColor = vec4(
+    0.0, 0.0,
+    total_elevation,
+    prev_elevation.a
+  );
 }
 `

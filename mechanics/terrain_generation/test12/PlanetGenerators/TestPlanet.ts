@@ -4,6 +4,7 @@ import { PlanetData } from "../ObjectData/PlanetData";
 
 import { destroyGUIrecursive } from "../lib/GUI";
 import { Scene } from "babylonjs";
+import { NoiseController } from "../ObjectData/Noise/NoiseController";
 
 export class TestPlanet {
   icoSphereMesh: IcoSphereMesh
@@ -20,7 +21,7 @@ export class TestPlanet {
 
     this.createGui()
 
-    this.icoSphereMesh = new IcoSphereMesh(this.scene, undefined, planetData.getNoiseLayers())
+    this.icoSphereMesh = new IcoSphereMesh(this.scene, undefined, planetData.noise_controller)
 
     this.updateInterval = setInterval(() => {
       if(this.autoUpdate) {
