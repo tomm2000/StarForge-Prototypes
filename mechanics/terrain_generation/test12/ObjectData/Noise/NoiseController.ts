@@ -41,27 +41,38 @@ export class NoiseController {
   private removeLayer() {
     if(this.noiseLayers.length == 0 || this.currentLayer >= this.noiseLayers.length) { return; }
 
+    //---- the pointed layer gets removed from the array and gets disposed of ----
     this.noiseLayers[this.currentLayer].dispose(false)
     this.noiseLayers.splice(this.currentLayer, 1)
 
+    //---- if it was the last layer in the list we point to the new last layer ----
     if(this.currentLayer >= this.noiseLayers.length) {
       this.currentLayer = Math.max(0, this.noiseLayers.length -1)
     }
     
+    //---- if there are no more layers left the GUI gets cleared ----
     if(this.noiseLayers.length == 0) {
       this.clearNoiseGUI()
     }
 
+    //---- we set the new values for the index slider ----
     this.indexGUI?.max(Math.max(0, this.noiseLayers.length-1))
     this.indexGUI?.setValue(this.currentLayer)
+
+    //---- we clear the cache for all the layers past the one we removed
+    this.elevationDataCache = this.elevationDataCache.splice(0, this.currentLayer)
   }
 
   private switchLayer(index: number = this.currentLayer) {
     if(!this.layerGUI || this.noiseLayers.length == 0) { return }
 
+    this.currentLayer = index
+
     this.clearNoiseGUI()
 
     this.noiseLayers[index].generateGui(this.layerGUI)
+    this.indexGUI?.setValue(index)
+
   }
 
   private clearNoiseGUI() {
@@ -105,7 +116,7 @@ export class NoiseController {
 
   setGPUSpecs(specs: GPUSpecs) { this.gpuSpecs = specs }
 
-  //REVIEW: can be optimized to recalculate only needed layers!
+  //TODO: only layers after the one that got changed need to be recalculated!
   /**
    * calculates all the noise layers
    * @param elevation_data a vec4 array with (/,/,a,b), where a is the elevation of the previous layer and b the total elevation

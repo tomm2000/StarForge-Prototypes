@@ -37,7 +37,7 @@ export class GPGPU {
   private width: number
   private attribs: any
   private uniforms: any
-  private textures: any
+  private textures: {tex: WebGLTexture | null, width: number, height: number}[]
 
   private standardGeometryVals: Float32Array
   private standardVertex: string

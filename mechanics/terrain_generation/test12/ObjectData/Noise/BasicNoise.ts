@@ -25,6 +25,7 @@ export class BasicNoise extends NoiseLayer {
 
   protected getUniforms(): GPGPUuniform[] {
     return [
+      ...super.getUniforms(),
       {type: 'uniform1f', name: 'amplitude', value: this.amplitude},
       {type: 'uniform1f', name: 'frequency', value: this.frequency},
       {type: 'uniform1i', name: 'octaves', value: this.octaves},
@@ -54,9 +55,10 @@ uniform float frequency;
 uniform int octaves;
 uniform float persistance;
 uniform float lacunarity;
+uniform int seed;
 
-uniform sampler2D texture0; // position
-uniform sampler2D texture1; // elevation (/,/,prev,tot)
+uniform sampler2D texture0; // elevation (/,/,prev,tot)
+uniform sampler2D texture1; // position
 varying vec2 vTextureCoord;
 
 ${noise3D}
@@ -65,8 +67,8 @@ const int MAX_OCTAVES = 32;
 
 void main() {
   //---- restoring data from [0,1] -> [0,2] -> [-1,1] ----
-  vec4 position = texture2D(texture0, vTextureCoord);
-  vec4 prev_elevation = texture2D(texture1, vTextureCoord);
+  vec4 position = texture2D(texture1, vTextureCoord);
+  vec4 prev_elevation = texture2D(texture0, vTextureCoord);
   //------------------------------------------------------
 
 //NOTE: all the elevation values start from 1 instead of 0! subract 1 for masks!
@@ -76,7 +78,7 @@ void main() {
 
   vec3 p = vec3(0.0);
   vec3 g;
-  float alpha = 1.0;
+  float alpha = 1.0 * float(seed);
 
   for(int i = 0; i < MAX_OCTAVES; i++) {
     if(i >= octaves) { break; }
@@ -96,7 +98,7 @@ void main() {
   gl_FragColor = vec4(
     0.0, 0.0,
     total_elevation,
-    prev_elevation.a
+    total_elevation + prev_elevation.a
   );
 }
 `

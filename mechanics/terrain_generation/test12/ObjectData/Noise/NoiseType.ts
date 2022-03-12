@@ -9,8 +9,6 @@ import { NoiseController } from "./NoiseController";
 export type NoiseTypes = 'default' | 'basic'
 export const NoiseTypeList: NoiseTypes[] = ['default', 'basic']
 
-  
-
 export type GPUSpecs = {
   width: number,
   height: number,
@@ -26,6 +24,7 @@ export class NoiseLayer {
   protected controller: NoiseController
   protected gui: GUI | undefined
   protected gpuSpecs: GPUSpecs | undefined
+  protected seed: number
 
   protected _noiseType: NoiseTypes = 'default'
   set noiseType(type: NoiseTypes) {
@@ -42,6 +41,7 @@ export class NoiseLayer {
     this.layer_index = index
     this.gpuSpecs = gpuSpecs
     if(gpuSpecs) { this.initGPU(gpuSpecs) }
+    this.seed = Math.floor(Math.random() * 9999)
   }
 
   initGPU({gl, height, width}: GPUSpecs) {
@@ -105,13 +105,17 @@ export class NoiseLayer {
   }
 
   protected getUniforms(): GPGPUuniform[] {
-    return []
+
+    return [
+      {type: 'uniform1i', name: 'seed', value: this.seed},
+    ]
   }
 
   generateGui(gui: GUI): GUI {
     gui.open()
 
     gui.add(this, 'noiseType', NoiseTypeList)
+    gui.add(this, 'seed', 0, 9999, 1)
 
     this.gui = gui
     return gui

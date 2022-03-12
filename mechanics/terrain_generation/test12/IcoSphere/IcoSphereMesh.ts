@@ -15,7 +15,7 @@ export class IcoSphereMesh {
   private minHeight: number = 0
   private maxHeight: number = 0
 
-  constructor(scene: Scene, resolution: number = 1, noise_controller: NoiseController) {
+  constructor(scene: Scene, resolution: number = 64, noise_controller: NoiseController) {
     this.noise_controller = noise_controller
     this.resolution = resolution
     this.scene = scene
@@ -60,7 +60,7 @@ export class IcoSphereMesh {
 
       const results = this.noise_controller.getLayerData()
 
-      console.log(results)
+      // console.log(results)
 
       let max_elevation = Number.MIN_VALUE
       let min_elevation = Number.MAX_VALUE
