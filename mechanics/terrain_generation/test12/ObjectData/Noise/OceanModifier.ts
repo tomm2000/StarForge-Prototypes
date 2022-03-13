@@ -1,0 +1,95 @@
+import { GUI } from "dat.gui";
+import { getDefaultPositionShader, getDefaultPositionShaderVertex, positionShader } from "../positionShader";
+import { noise3D } from "../../lib/GlslNoise";
+import { GPGPUuniform } from "../../lib/GPGPU";
+import { PlanetData } from "../PlanetData";
+import { NoiseLayer } from "./NoiseLayer";
+import { GPUSpecs, NoiseController } from "../NoiseController";
+import { texture_unifomrs } from "../../lib/GlslSnippets";
+
+export class OceanModifier extends NoiseLayer {
+  protected oceanFloor: number = 0
+  protected oceanDepth: number = 1
+  protected oceanLevel: number = 1
+  protected floorFlatten: number = 5
+
+  constructor(gpuSpecs: GPUSpecs | undefined = undefined, controller: NoiseController, index: number) {
+    super(gpuSpecs, controller, index)
+
+    this._noiseType = 'ocean_modifier'
+  } 
+
+  protected getPositionShader(): positionShader {
+    return getDefaultPositionShaderVertex(FRAGMENT_SOURCE)
+  }
+
+  protected getUniforms(): GPGPUuniform[] {
+    return [
+      ...super.getUniforms(),
+      {type: 'uniform1f', name: 'ocean_floor', value: this.oceanFloor},
+      {type: 'uniform1f', name: 'ocean_depth', value: this.oceanDepth},
+      {type: 'uniform1f', name: 'ocean_level', value: this.oceanLevel},
+      {type: 'uniform1f', name: 'floor_flatten', value: this.floorFlatten},
+    ]
+  }
+
+  generateGui(gui: GUI): GUI {
+    gui = super.generateGui(gui)
+
+    gui.add(this, 'oceanFloor', -2, 2, 0.01)
+    gui.add(this, 'oceanDepth', 0.1, 5, 0.01)
+    gui.add(this, 'oceanLevel', -2, 2, 0.01)
+    gui.add(this, 'floorFlatten', 1, 10, 0.1)
+
+    return gui
+  }
+}
+
+const FRAGMENT_SOURCE = /*glsl*/`
+precision highp float;
+
+uniform float ocean_floor;
+uniform float ocean_depth;
+uniform float ocean_level;
+uniform float floor_flatten;
+
+${texture_unifomrs}
+
+${noise3D}
+
+const int MAX_OCTAVES  = 32;
+const int MAX_EXPONENT = 8;
+
+void main() {
+  vec4 position = texture2D(position_texture, vTextureCoord);
+  vec4 prev_elevation = texture2D(elevation_texture, vTextureCoord);
+
+  float total_elevation = prev_elevation.a;
+
+  if(total_elevation <= ocean_level) {
+    float depth = ocean_level - total_elevation;
+
+    total_elevation += depth;
+
+    depth *= ocean_depth;
+    
+    total_elevation -= depth;
+  }
+
+  if(total_elevation < ocean_floor) {
+    float extra_depth = ocean_floor - total_elevation;
+
+    total_elevation += extra_depth;
+    
+    extra_depth /= floor_flatten;
+
+    total_elevation -= extra_depth;
+  }
+
+  gl_FragColor = vec4(
+    0.0, 0.0,
+    total_elevation,
+    total_elevation
+  );
+}
+`

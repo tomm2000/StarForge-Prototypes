@@ -1,7 +1,19 @@
 import { GUI, GUIController } from "dat.gui";
-import { destroyGUIrecursive } from "../../lib/GUI";
-import { BasicNoise } from "./BasicNoise";
-import { GPUSpecs, NoiseLayer, NoiseTypes } from "./NoiseType";
+import { destroyGUIrecursive } from "../lib/GUI";
+import { BasicNoise } from "./Noise/BasicNoise";
+import { NoiseLayer } from "./Noise/NoiseLayer";
+import { OceanModifier } from "./Noise/OceanModifier";
+import { PositiveNoise } from "./Noise/PositiveNoise";
+import { RidgeNoise } from "./Noise/RidgeNoise";
+
+export type NoiseTypes = 'default' | 'basic' | 'positive' | 'ridge' | 'ocean_modifier'
+export const NoiseTypeList: NoiseTypes[] = ['default', 'basic', 'positive', 'ridge', 'ocean_modifier']
+
+export type GPUSpecs = {
+  width: number,
+  height: number,
+  gl?: WebGLRenderingContext
+}
 
 export class NoiseController {
   private noiseLayers: NoiseLayer[] = []
@@ -35,6 +47,7 @@ export class NoiseController {
 
     this.indexGUI?.max(this.noiseLayers.length - 1)
 
+    this.updateIndexes()
     this.switchLayer(this.noiseLayers.length - 1)
   }
 
@@ -61,6 +74,8 @@ export class NoiseController {
 
     //---- we clear the cache for all the layers past the one we removed
     this.elevationDataCache = this.elevationDataCache.splice(0, this.currentLayer)
+    this.updateIndexes()
+    this.switchLayer()
   }
 
   private switchLayer(index: number = this.currentLayer) {
@@ -73,6 +88,10 @@ export class NoiseController {
     this.noiseLayers[index].generateGui(this.layerGUI)
     this.indexGUI?.setValue(index)
 
+  }
+
+  updateIndexes() {
+    this.noiseLayers.forEach((layer, index) => layer.setIndex(index))
   }
 
   private clearNoiseGUI() {
@@ -91,6 +110,12 @@ export class NoiseController {
       new_layer = new BasicNoise(this.gpuSpecs, this, this.currentLayer)
     } else if(type == 'default') {
       new_layer = new NoiseLayer(this.gpuSpecs, this, this.currentLayer)
+    } else if(type == 'positive') {
+      new_layer = new PositiveNoise(this.gpuSpecs, this, this.currentLayer)
+    } else if(type == 'ridge') {
+      new_layer = new RidgeNoise(this.gpuSpecs, this, this.currentLayer)
+    } else if(type == 'ocean_modifier') {
+      new_layer = new OceanModifier(this.gpuSpecs, this, this.currentLayer)
     } else {
       throw 'undefined noise type'
     }

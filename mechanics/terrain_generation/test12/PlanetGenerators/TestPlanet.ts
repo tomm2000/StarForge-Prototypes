@@ -3,8 +3,9 @@ import { IcoSphereMesh } from "../IcoSphere/IcoSphereMesh";
 import { PlanetData } from "../ObjectData/PlanetData";
 
 import { destroyGUIrecursive } from "../lib/GUI";
-import { Scene } from "babylonjs";
-import { NoiseController } from "../ObjectData/Noise/NoiseController";
+import { NodeMaterial, Scene } from "babylonjs";
+import { NoiseController } from "../ObjectData/NoiseController";
+import { setNMInputValue } from "../lib/nodeMaterial";
 
 export class TestPlanet {
   icoSphereMesh: IcoSphereMesh
@@ -23,11 +24,24 @@ export class TestPlanet {
 
     this.icoSphereMesh = new IcoSphereMesh(this.scene, undefined, planetData.noise_controller)
 
+    NodeMaterial.ParseFromSnippetAsync(this.planetData.materialId, this.scene).then(nodeMaterial => {
+      this.icoSphereMesh.setMaterial(nodeMaterial)
+      this.updateMaterialNodes()
+    })
+
     this.updateInterval = setInterval(() => {
       if(this.autoUpdate) {
         this.reload()
       }
     }, 16)
+  }
+
+  updateMaterialNodes(): void {
+    const material = this.icoSphereMesh.getMaterial()
+    setNMInputValue(material, 'INheightMultiplier', this.planetData.materialHeightMultiplier)
+    setNMInputValue(material, 'INseaLevel',         this.planetData.waterLevel)
+    setNMInputValue(material, 'INminHeight',        this.icoSphereMesh.getMinHeight())
+    setNMInputValue(material, 'INmaxHeight',        this.icoSphereMesh.getMaxHeight())
   }
 
   createGui() {

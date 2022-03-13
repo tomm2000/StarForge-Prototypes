@@ -1,6 +1,6 @@
 import { Mesh, Scene, MeshBuilder, Material, } from "babylonjs"
-import { NoiseController } from "../ObjectData/Noise/NoiseController"
-import { GPUSpecs, NoiseLayer } from '../ObjectData/Noise/NoiseType'
+import { GPUSpecs, NoiseController } from "../ObjectData/NoiseController"
+import { NoiseLayer } from '../ObjectData/Noise/NoiseLayer'
 
 export class IcoSphereMesh {
   private resolution: number = 10

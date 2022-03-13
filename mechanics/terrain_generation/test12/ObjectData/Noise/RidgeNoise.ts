@@ -1,58 +1,19 @@
-import { GUI } from "dat.gui";
 import { getDefaultPositionShaderVertex, positionShader } from "../positionShader";
 import { noise3D } from "../../lib/GlslNoise";
-import { GPGPUuniform } from "../../lib/GPGPU";
-import { NoiseLayer } from "./NoiseLayer";
 import { GPUSpecs, NoiseController } from "../NoiseController";
+import { BasicNoise } from "./BasicNoise";
 import { texture_unifomrs } from "../../lib/GlslSnippets";
 
-export class BasicNoise extends NoiseLayer {
-  protected amplitude: number = 1
-  protected frequency: number = 1
-  protected octaves: number = 1
-  protected persistance: number = 0.5
-  protected lacunarity: number = 2
-  protected exponent: number = 1
-  private mantain_sign: boolean = false
-  protected seed: number = Math.floor(Math.random() * 9999)
+export class RidgeNoise extends BasicNoise {
 
   constructor(gpuSpecs: GPUSpecs | undefined = undefined, controller: NoiseController, index: number) {
     super(gpuSpecs, controller, index)
 
-    this._noiseType = 'basic'
+    this._noiseType = 'ridge'
   } 
 
   protected getPositionShader(): positionShader {
     return getDefaultPositionShaderVertex(FRAGMENT_SOURCE)
-  }
-
-  protected getUniforms(): GPGPUuniform[] {
-    return [
-      ...super.getUniforms(),
-      {type: 'uniform1f', name: 'amplitude', value: this.amplitude},
-      {type: 'uniform1f', name: 'frequency', value: this.frequency},
-      {type: 'uniform1i', name: 'octaves', value: this.octaves},
-      {type: 'uniform1f', name: 'persistance', value: this.persistance},
-      {type: 'uniform1f', name: 'lacunarity', value: this.lacunarity},
-      {type: 'uniform1i', name: 'exponent', value: this.exponent},
-      {type: 'uniform1i', name: 'mantain_sign', value: this.mantain_sign ? 1 : 0},
-      {type: 'uniform1i', name: 'seed', value: this.seed},
-    ]
-  }
-
-  generateGui(gui: GUI): GUI {
-    gui = super.generateGui(gui)
-
-    gui.add(this, 'seed', 0, 9999, 1)
-    gui.add(this, 'amplitude', -1, 1, 0.01)
-    gui.add(this, 'frequency', 0.1, 5, 0.01)
-    gui.add(this, 'octaves', 1, 10, 1)
-    gui.add(this, 'persistance', 0.1, 1, 0.001)
-    gui.add(this, 'lacunarity', 0.1, 3, 0.1)
-    gui.add(this, 'exponent', 1, 6, 1)
-    gui.add(this, 'mantain_sign')
-
-    return gui
   }
 }
 
@@ -83,6 +44,7 @@ void main() {
   float total_elevation = 0.0;
   float oct_amplitude = amplitude;
   float oct_frequency = frequency;
+  float elevation_mask = 1.0;
 
   vec3 p = vec3(0.0);
   vec3 g;
@@ -93,7 +55,12 @@ void main() {
 
     vec3 v = position.xyz * oct_frequency;
 
-    total_elevation += psrdnoise(v, p, alpha, g) * oct_amplitude;
+    float layer = (1.0 - abs(psrdnoise(v, p, alpha, g)));
+
+    layer *= elevation_mask;
+    elevation_mask = layer;
+
+    total_elevation += layer * oct_amplitude;
 
     oct_frequency *= lacunarity;
     oct_amplitude *= persistance;

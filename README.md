@@ -16,11 +16,12 @@ yarn generate
 ## Resources used:
 - ### [Babylon js](https://www.babylonjs.com/):
   for most of the 3D stuff
-- ### [This repository](https://github.com/DanRuta/GPGPU)
+- ### [dat.gui](https://github.com/dataarts/dat.gui)
+  for the gui
+- ### [This repository](https://github.com/tomm2000/GPGPU)
   for compute shaders (untill babylonjs and webGPU come around)
 - ### [This repository](https://github.com/stegu/psrdnoise/)
-  for noise computation in the shaders
-
+  for glsl noise code
 ---
 
 ## Todo:

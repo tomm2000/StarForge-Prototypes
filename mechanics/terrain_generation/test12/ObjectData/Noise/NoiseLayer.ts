@@ -1,19 +1,8 @@
 import { GUI } from "dat.gui";
-import { getDefaultPositionShader, positionShader } from "./positionShader";
+import { getDefaultPositionShader, positionShader } from "../positionShader";
 import { GPGPU, GPGPUuniform } from "../../lib/GPGPU";
 import { destroyGUIrecursive } from "../../lib/GUI";
-import { PlanetData } from "../PlanetData";
-import { BasicNoise } from "./BasicNoise";
-import { NoiseController } from "./NoiseController";
-
-export type NoiseTypes = 'default' | 'basic'
-export const NoiseTypeList: NoiseTypes[] = ['default', 'basic']
-
-export type GPUSpecs = {
-  width: number,
-  height: number,
-  gl?: WebGLRenderingContext
-}
+import { GPUSpecs, NoiseController, NoiseTypeList, NoiseTypes } from "../NoiseController";
 
 export class NoiseLayer {
   protected gpu: GPGPU | undefined
@@ -24,7 +13,6 @@ export class NoiseLayer {
   protected controller: NoiseController
   protected gui: GUI | undefined
   protected gpuSpecs: GPUSpecs | undefined
-  protected seed: number
 
   protected _noiseType: NoiseTypes = 'default'
   set noiseType(type: NoiseTypes) {
@@ -41,8 +29,9 @@ export class NoiseLayer {
     this.layer_index = index
     this.gpuSpecs = gpuSpecs
     if(gpuSpecs) { this.initGPU(gpuSpecs) }
-    this.seed = Math.floor(Math.random() * 9999)
   }
+
+  setIndex(index: number) { this.layer_index = index }
 
   initGPU({gl, height, width}: GPUSpecs) {
     if(this.gpu) { this.gpu.delete() }
@@ -67,15 +56,17 @@ export class NoiseLayer {
    * @param position_data a vec4 array with (x,y,z,/), where x,y,z is a point on the sphere
    * @returns a new updated elevation_data vec4 array
    */
-  protected updateTextures(elevation_data: Float32Array, position_data: Float32Array) {
+  protected updateTextures(elevation_data: Float32Array, position_data: Float32Array, mask_data: Float32Array) {
     if(!this.gpu) { throw 'initialize gpu first' }
 
     if(this.texture_built) {
       this.gpu.updateTexture(position_data, 0)
       this.gpu.updateTexture(elevation_data, 1)
+      // this.gpu.updateTexture(mask_data, 2)
     } else {
       this.gpu.makeTexture(position_data)
       this.gpu.makeTexture(elevation_data)
+      // this.gpu.makeTexture(mask_data)
       this.texture_built = true
     }
   }
@@ -90,10 +81,10 @@ export class NoiseLayer {
    * @param position_data a vec4 array with (x,y,z,/), where x,y,z is a point on the sphere
    * @returns a new updated elevation_data vec4 array
    */
-  applyNoise(elevation_data: Float32Array, position_data: Float32Array): Float32Array {
+  applyNoise(elevation_data: Float32Array, position_data: Float32Array, mask_data: Float32Array = new Float32Array(0)): Float32Array {
     if(!this.gpu) { throw 'initialize gpu first' }
   
-    this.updateTextures(elevation_data, position_data)
+    this.updateTextures(elevation_data, position_data, mask_data)
 
     for(let uniform of this.getUniforms()) {
       this.gpu.addUniform(uniform)
@@ -106,16 +97,13 @@ export class NoiseLayer {
 
   protected getUniforms(): GPGPUuniform[] {
 
-    return [
-      {type: 'uniform1i', name: 'seed', value: this.seed},
-    ]
+    return []
   }
 
   generateGui(gui: GUI): GUI {
     gui.open()
 
     gui.add(this, 'noiseType', NoiseTypeList)
-    gui.add(this, 'seed', 0, 9999, 1)
 
     this.gui = gui
     return gui

@@ -1,4 +1,5 @@
-import { GPGPUuniform } from "../../lib/GPGPU"
+import { texture_unifomrs } from "../lib/GlslSnippets"
+import { GPGPUuniform } from "../lib/GPGPU"
 
 export type positionShader = { vertexSource: string, fragmentSource: string, uniforms: positionUniform[] }
 export type positionUniform = GPGPUuniform
@@ -40,11 +41,11 @@ export function getDefaultPositionShader(): positionShader {
     fragmentSource: /*glsl*/`
       precision highp float;
 
-      uniform sampler2D texture;
-      varying vec2 vTextureCoord;
+      
+      ${texture_unifomrs}
 
       void main() {
-        gl_FragColor = texture2D(texture, vTextureCoord);
+        gl_FragColor = texture2D(elevation_texture, vTextureCoord);
         // gl_FragColor = vec4(vTextureCoord, 0.3, 0.3);
         // gl_FragColor = vec4(-2.0, 2.0, -2.0, 2.0);
       }

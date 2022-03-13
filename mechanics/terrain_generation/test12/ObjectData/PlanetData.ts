@@ -1,8 +1,8 @@
 import { GUI } from "dat.gui";
 import { destroyGUIrecursive } from "../lib/GUI";
 import { BasicNoise } from "./Noise/BasicNoise";
-import { NoiseController } from "./Noise/NoiseController";
-import { NoiseLayer, NoiseTypes } from "./Noise/NoiseType";
+import { NoiseController, NoiseTypes } from "./NoiseController";
+import { NoiseLayer } from "./Noise/NoiseLayer";
 
 export type PlanetTypes = 'terrestrial1'
 
@@ -15,6 +15,7 @@ export class PlanetData {
   // https://nme.babylonjs.com/#XRRVZX#49
   materialId: string = 'XRRVZX#49'
   materialHeightMultiplier: number = 1
+  waterLevel: number = 0
 
   noise_controller: NoiseController = new NoiseController()
 
@@ -30,6 +31,7 @@ export class PlanetData {
     folder.add(this, 'radius', 0.1, 2, 0.01)
     // folder.add(this, 'globalMinHeight', -1, 1, 0.001)
     folder.add(this, 'seed', 0, 9999)
+    folder.add(this, 'waterLevel', -2, 2)
     // folder.add(this, 'materialHeightMultiplier', 0, 1, 0.01)
 
     folder.open()

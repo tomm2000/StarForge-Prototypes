@@ -30,7 +30,7 @@ export type integerArrayUniform = {
   type: "uniform1iv"
 }
 
-/* https://github.com/DanRuta/GPGPU */
+/* https://github.com/tomm2000/GPGPU */
 export class GPGPU {
   private ready: boolean
   private height: number
@@ -94,9 +94,11 @@ export class GPGPU {
   }
 
   makeTexture(data: Float32Array, width = this.width, height = this.height) {
+    const index = this.textures.length
 
-    this.textures.push({ tex: this.gl.createTexture(), width, height })
-    this.gl.bindTexture(this.gl.TEXTURE_2D, this.textures[this.textures.length - 1].tex)
+    this.textures[index] = { tex: this.gl.createTexture(), width, height }
+    this.gl.activeTexture((this.gl as any)[`TEXTURE${index}`])
+    this.gl.bindTexture(this.gl.TEXTURE_2D, this.textures[index].tex)
 
     this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MIN_FILTER, this.gl.NEAREST)
     this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MAG_FILTER, this.gl.NEAREST)
@@ -194,25 +196,15 @@ export class GPGPU {
     }
   }
 
-  draw(texture = this.textures[this.textures.length - 1]) {
-
-    this.gl.activeTexture(this.gl.TEXTURE0)
-    this.gl.bindTexture(this.gl.TEXTURE_2D, texture.tex)
-
-    if (!this.ready) {
-
+  draw() {
+    if(!this.ready) {
       this.ready = true
-      this.addUniform({name: "texture0", value: 0, type: "uniform1i"})
 
-      const texToAdd = texture == this.textures[this.textures.length - 1] ? this.textures.length - 1 : this.textures.length
-
-      for (let t = 0; t < texToAdd; t++) {
-        this.gl.activeTexture((this.gl as any)[`TEXTURE${t + 1}`])
-        this.gl.bindTexture(this.gl.TEXTURE_2D, this.textures[t].tex)
-        this.addUniform({name: `texture${t + 1}`, value: t + 1, type: "uniform1i"})
+      for(let i = 0; i < this.textures.length; i++) {
+        this.gl.activeTexture((this.gl as any)[`TEXTURE${i}`])
+        this.gl.bindTexture(this.gl.TEXTURE_2D, this.textures[i].tex)
+        this.addUniform({name: `texture${i}`, value: i, type: "uniform1i"})
       }
-
-      this.gl.activeTexture(this.gl.TEXTURE0)
     }
 
     this.gl.drawArrays(this.gl.TRIANGLE_STRIP, 0, 4)
