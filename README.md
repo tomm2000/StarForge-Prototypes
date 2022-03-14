@@ -1,4 +1,11 @@
 # Prototypes for a procedural planet generator
+
+This repository holds the incremental prototypes produced while learning about 3D graphics (mainly concerning the browser) and trying to build a procedural planet generator.
+
+The plan is to use the (eventual) final version of this project for another standalone project of mine
+
+---
+
 [live demo](https://tomm2000.github.io/StarForge-Prototypes/)
 
 ## How to compile:
