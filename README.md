@@ -76,3 +76,23 @@ yarn generate
 - reworked ui (again) to work with the new noise system
 - re-added support for loading and downloading
 - re-added support for masks
+
+
+# Some screenshots showcasing the improvements over the terrain generation
+### first test with procedural terrain
+![very old screenshot](https://github.com/tomm2000/StarForge-Prototypes/blob/master/assets/gallery/very_old.png?raw=true)
+
+---
+
+### first iteration of customized noise
+![terrain 06/03/22](https://github.com/tomm2000/StarForge-Prototypes/blob/master/assets/gallery/terrain_06_03_22.png?raw=true)
+
+---
+
+### first iteration of multiple noise layers & custom shader
+![terrain 06/03/22](https://github.com/tomm2000/StarForge-Prototypes/blob/master/assets/gallery/terrain_08_03_22.png?raw=true)
+
+---
+
+### more advanced noise features and better shader coloring
+![terrain 06/03/22](https://github.com/tomm2000/StarForge-Prototypes/blob/master/assets/gallery/terrain_09_03_22.png?raw=true)
