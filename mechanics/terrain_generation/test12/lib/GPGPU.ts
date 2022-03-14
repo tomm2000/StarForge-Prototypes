@@ -80,6 +80,7 @@ export class GPGPU {
     }
 
     const textureFloat = this.gl.getExtension("OES_texture_float")
+    this.gl.getExtension('WEBGL_color_buffer_float')
 
     if (!textureFloat) {
       alert("Floating point textures not supported")

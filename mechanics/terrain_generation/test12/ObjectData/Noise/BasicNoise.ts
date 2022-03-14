@@ -2,8 +2,8 @@ import { GUI } from "dat.gui";
 import { getDefaultPositionShaderVertex, positionShader } from "../positionShader";
 import { noise3D } from "../../lib/GlslNoise";
 import { GPGPUuniform } from "../../lib/GPGPU";
-import { NoiseLayer } from "./NoiseLayer";
-import { GPUSpecs, NoiseController } from "../NoiseController";
+import { NoiseLayer, NoiseLayerData } from "./NoiseLayer";
+import { GPUSpecs, NoiseController, NoiseTypes } from "../NoiseController";
 import { texture_unifomrs } from "../../lib/GlslSnippets";
 
 export class BasicNoise extends NoiseLayer {
@@ -54,6 +54,15 @@ export class BasicNoise extends NoiseLayer {
 
     return gui
   }
+
+  getJson(): NoiseLayerData {
+    const { seed, amplitude, frequency, octaves, persistance, lacunarity, exponent, mantain_sign } = this
+    
+    return {
+      ...super.getJson(),
+      seed, amplitude, frequency, octaves, persistance, lacunarity, exponent, mantain_sign
+    }
+  }
 }
 
 const FRAGMENT_SOURCE = /*glsl*/`
@@ -67,6 +76,9 @@ uniform float lacunarity;
 uniform int seed;
 uniform int exponent;
 uniform int mantain_sign;
+
+uniform int is_masked;
+uniform int mask_only;
 
 ${texture_unifomrs}
 
@@ -107,14 +119,20 @@ void main() {
     total_elevation *= total_elevation;
   }
 
-  if(mantain_sign == 1) {
-    total_elevation *= sign(amplitude);
+  if(mantain_sign == 1) { total_elevation *= sign(amplitude); }
+
+  if(is_masked == 1) {
+    vec4 mask_elevation = texture2D(mask_texture, vTextureCoord);
+    total_elevation *= mask_elevation.b;
   }
+
+  float output_elevation = prev_elevation.a;
+  if(mask_only == 0) { output_elevation += total_elevation; }
 
   gl_FragColor = vec4(
     0.0, 0.0,
     total_elevation,
-    total_elevation + prev_elevation.a
+    output_elevation
   );
 }
 `

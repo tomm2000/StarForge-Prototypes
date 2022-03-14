@@ -1,10 +1,10 @@
 <template>
 <div id="main_container">
   <router-link id="home-link" to="/">home</router-link>
-  <!-- <div id="planet_adders">
+  <div id="planet_adders">
     <input type="file" minlength="1" id="file_upload" @change="upload">
     <input type="button" minlength="1" id="add_planet" @click="add_planet" value="add empty planet">
-  </div> -->
+  </div>
   <div id="divFps">fps: </div>
   <div id="animation_container">
       <!-- Animation -->
@@ -32,22 +32,20 @@ export default Vue.extend({
     this.universe = new Universe(canvas)
   },
   methods: {
-    // upload(file: any) {
-    //   let fr = new FileReader()
+    upload(file: any) {
+      let fr = new FileReader()
 
-    //   fr.readAsText(file.target.files[0])
+      fr.readAsText(file.target.files[0])
 
-    //   fr.onload = () => {
-    //     if(typeof fr.result != 'string') { return }
+      fr.onload = () => {
+        if(typeof fr.result != 'string') { return }
 
-    //     let data = JSON.parse(fr.result) as PlanetDataJson
-
-    //     this.universe?.addPlanetFromData(data)
-    //   }
-    // },
-    // add_planet() {
-    //   this.universe?.addPlanet()
-    // }
+        this.universe?.addPlanetFromData(fr.result)
+      }
+    },
+    add_planet() {
+      this.universe?.addPlanet()
+    }
   },
   destroyed() {
     // console.log('destroy')

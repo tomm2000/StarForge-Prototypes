@@ -48,17 +48,17 @@ export class Universe {
     }
   }
 
-  // addPlanetFromData(planetData: PlanetDataJson) {
-  //   if(this.planets[0]) { this.planets[0]?.dispose() }
+  addPlanetFromData(data: string) {
+    if(this.planets[0]) { this.planets[0]?.dispose() }
     
-  //   this.planets[0] = new Terrestrial1(this.scene, undefined, new PlanetData(planetData))
-  // }
+    this.planets[0] = new TestPlanet(this.scene, undefined, data)
+  }
 
-  // addPlanet() {
-  //   if(this.planets[0]) { this.planets[0]?.dispose() }
+  addPlanet() {
+    if(this.planets[0]) { this.planets[0]?.dispose() }
     
-  //   this.planets[0] = new Terrestrial1(this.scene)
-  // }
+    this.planets[0] = new TestPlanet(this.scene)
+  }
 
   private getNewScene(engine: Engine, canvas: HTMLCanvasElement): Scene {
     // Create a basic BJS Scene object

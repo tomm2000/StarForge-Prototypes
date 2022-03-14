@@ -15,14 +15,14 @@ export class TestPlanet {
   private updateInterval: NodeJS.Timer | undefined
   private scene: Scene;
 
-  constructor(scene: Scene, radius: number = 1, planetData: PlanetData = new PlanetData()) {
+  constructor(scene: Scene, radius: number = 1, planetData?: string) {
     this.scene = scene;
 
-    this.planetData = planetData
+    this.planetData = planetData ? PlanetData.fromJson(planetData) : new PlanetData()
 
     this.createGui()
 
-    this.icoSphereMesh = new IcoSphereMesh(this.scene, undefined, planetData.noise_controller)
+    this.icoSphereMesh = new IcoSphereMesh(this.scene, undefined, this.planetData.noise_controller)
 
     NodeMaterial.ParseFromSnippetAsync(this.planetData.materialId, this.scene).then(nodeMaterial => {
       this.icoSphereMesh.setMaterial(nodeMaterial)
@@ -55,6 +55,7 @@ export class TestPlanet {
 
   reload() {
     this.icoSphereMesh.updateMesh()
+    this.updateMaterialNodes()
   }
 
   dispose() {

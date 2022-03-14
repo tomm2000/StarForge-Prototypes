@@ -14,6 +14,9 @@ export class NoiseLayer {
   protected gui: GUI | undefined
   protected gpuSpecs: GPUSpecs | undefined
 
+  protected maskIndex: number = -1
+  protected maskOnly: boolean = false
+
   protected _noiseType: NoiseTypes = 'default'
   set noiseType(type: NoiseTypes) {
     this._noiseType = type
@@ -32,6 +35,7 @@ export class NoiseLayer {
   }
 
   setIndex(index: number) { this.layer_index = index }
+  getMaskIndex() { return this.maskIndex }
 
   initGPU({gl, height, width}: GPUSpecs) {
     if(this.gpu) { this.gpu.delete() }
@@ -56,17 +60,18 @@ export class NoiseLayer {
    * @param position_data a vec4 array with (x,y,z,/), where x,y,z is a point on the sphere
    * @returns a new updated elevation_data vec4 array
    */
-  protected updateTextures(elevation_data: Float32Array, position_data: Float32Array, mask_data: Float32Array) {
+  protected updateTextures(elevation_data: Float32Array, position_data: Float32Array, mask_data?: Float32Array) {
     if(!this.gpu) { throw 'initialize gpu first' }
 
     if(this.texture_built) {
       this.gpu.updateTexture(position_data, 0)
       this.gpu.updateTexture(elevation_data, 1)
-      // this.gpu.updateTexture(mask_data, 2)
+      if(mask_data) { this.gpu.updateTexture(mask_data, 2) }
+      
     } else {
       this.gpu.makeTexture(position_data)
       this.gpu.makeTexture(elevation_data)
-      // this.gpu.makeTexture(mask_data)
+      this.gpu.makeTexture(mask_data || new Float32Array(0))
       this.texture_built = true
     }
   }
@@ -81,7 +86,7 @@ export class NoiseLayer {
    * @param position_data a vec4 array with (x,y,z,/), where x,y,z is a point on the sphere
    * @returns a new updated elevation_data vec4 array
    */
-  applyNoise(elevation_data: Float32Array, position_data: Float32Array, mask_data: Float32Array = new Float32Array(0)): Float32Array {
+  applyNoise(elevation_data: Float32Array, position_data: Float32Array, mask_data?: Float32Array): Float32Array {
     if(!this.gpu) { throw 'initialize gpu first' }
   
     this.updateTextures(elevation_data, position_data, mask_data)
@@ -97,13 +102,18 @@ export class NoiseLayer {
 
   protected getUniforms(): GPGPUuniform[] {
 
-    return []
+    return [
+      {type: 'uniform1i', name: 'is_masked', value: this.maskIndex >= 0 ? 1 : 0},
+      {type: 'uniform1i', name: 'mask_only', value: this.maskOnly ? 1 : 0}
+    ]
   }
 
   generateGui(gui: GUI): GUI {
     gui.open()
 
     gui.add(this, 'noiseType', NoiseTypeList)
+    gui.add(this, 'maskIndex', -1, this.layer_index - 1, 1)
+    gui.add(this, 'maskOnly')
 
     this.gui = gui
     return gui
@@ -119,4 +129,27 @@ export class NoiseLayer {
       destroyGUIrecursive(this.gui) 
     }
   }
+
+  getJson(): NoiseLayerData {
+    const { noiseType, maskIndex, maskOnly } = this
+    return { version: JSON_VERSION, noiseType, maskIndex, maskOnly }
+  }
+
+  static fromJson(data: NoiseLayerData, layer_class: typeof NoiseLayer, controller: NoiseController, index: number): NoiseLayer {
+    const layer = new layer_class(undefined, controller, index)
+    for(let k in data) {
+      if((layer as any)[k] && k != 'version' && k != 'noiseType') {
+        (layer as any)[k] = data[k]
+      }
+    }
+    return layer
+  }
 }
+
+export interface NoiseLayerData {
+  version: number,
+  noiseType: NoiseTypes,
+  [key: string]: any
+}
+
+const JSON_VERSION = 0.1

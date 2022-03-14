@@ -28,6 +28,9 @@ uniform float lacunarity;
 uniform int seed;
 uniform int exponent;
 
+uniform int is_masked;
+uniform int mask_only;
+
 ${texture_unifomrs}
 
 ${noise3D}
@@ -67,10 +70,18 @@ void main() {
     total_elevation *= total_elevation;
   }
 
+  if(is_masked == 1) {
+    vec4 mask_elevation = texture2D(mask_texture, vTextureCoord);
+    total_elevation *= mask_elevation.b;
+  }
+
+  float output_elevation = prev_elevation.a;
+  if(mask_only == 0) { output_elevation += total_elevation; }
+
   gl_FragColor = vec4(
     0.0, 0.0,
     total_elevation,
-    total_elevation + prev_elevation.a
+    output_elevation
   );
 }
 `

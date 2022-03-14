@@ -6,7 +6,7 @@
 export const texture_unifomrs = /*glsl*/`
 uniform sampler2D texture0; // position
 uniform sampler2D texture1; // elevation (/,/,prev,tot)
-// uniform sampler2D texture2; // mask
+uniform sampler2D texture2; // mask (/,/,prev,tot)
 varying vec2 vTextureCoord;
 
 #define position_texture texture0

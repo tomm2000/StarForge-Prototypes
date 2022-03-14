@@ -3,7 +3,7 @@ import { getDefaultPositionShader, getDefaultPositionShaderVertex, positionShade
 import { noise3D } from "../../lib/GlslNoise";
 import { GPGPUuniform } from "../../lib/GPGPU";
 import { PlanetData } from "../PlanetData";
-import { NoiseLayer } from "./NoiseLayer";
+import { NoiseLayer, NoiseLayerData } from "./NoiseLayer";
 import { GPUSpecs, NoiseController } from "../NoiseController";
 import { texture_unifomrs } from "../../lib/GlslSnippets";
 
@@ -43,6 +43,15 @@ export class OceanModifier extends NoiseLayer {
 
     return gui
   }
+
+  getJson(): NoiseLayerData {
+    const { oceanDepth, oceanFloor, oceanLevel, floorFlatten } = this
+    
+    return {
+      ...super.getJson(),
+      oceanDepth, oceanFloor, oceanLevel, floorFlatten
+    }
+  }
 }
 
 const FRAGMENT_SOURCE = /*glsl*/`
@@ -52,6 +61,8 @@ uniform float ocean_floor;
 uniform float ocean_depth;
 uniform float ocean_level;
 uniform float floor_flatten;
+
+uniform int is_masked;
 
 ${texture_unifomrs}
 
@@ -85,6 +96,11 @@ void main() {
 
     total_elevation -= extra_depth;
   }
+  
+  if(is_masked == 1) {
+    vec4 mask_elevation = texture2D(mask_texture, vTextureCoord);
+    total_elevation *= mask_elevation.b;
+  } 
 
   gl_FragColor = vec4(
     0.0, 0.0,
