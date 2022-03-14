@@ -22,7 +22,6 @@ export class NoiseController {
   private elevationDataCache: Float32Array[] = []
   private baseElevationDataCache: Float32Array | undefined
   private positionDataCache: Float32Array | undefined
-  private outputDataCache: Float32Array | undefined
 
   private gpuSpecs: GPUSpecs | undefined
 
@@ -46,6 +45,7 @@ export class NoiseController {
     this.generateGUI()
   }
 
+  /** initializes the layers with the current specs or the given ones */
   initializeLayers(gpuSpecs: GPUSpecs | undefined = this.gpuSpecs) {
     if(!gpuSpecs) { throw 'bad gpu specs' }
 
@@ -56,6 +56,10 @@ export class NoiseController {
     })
   }
 
+  /**
+   * adds a layer to the list
+   * @param layer the layer to add, defaults to a new default layer
+   */
   addLayer(layer: NoiseLayer | undefined) {
     const new_layer = layer || new NoiseLayer(this.gpuSpecs, this, this.noiseLayers.length)
     this.noiseLayers.push(new_layer)
@@ -66,6 +70,7 @@ export class NoiseController {
     this.switchLayer(this.noiseLayers.length - 1)
   }
 
+  /** removes the current layer from the lists, adjusts the index gui accordingly */
   private removeLayer() {
     if(this.noiseLayers.length == 0 || this.currentLayer >= this.noiseLayers.length) { return; }
 
@@ -93,6 +98,7 @@ export class NoiseController {
     this.switchLayer()
   }
 
+  /** switches the layer gui to the current layer or the indexed one */
   private switchLayer(index: number = this.currentLayer) {
     if(!this.layerGUI || this.noiseLayers.length == 0) { return }
 
@@ -104,10 +110,12 @@ export class NoiseController {
     this.indexGUI?.setValue(index)
   }
 
+  /** updates the indexes for all the layers */
   updateIndexes() {
     this.noiseLayers.forEach((layer, index) => layer.setIndex(index))
   }
 
+  /** clears the gui containing the noise data */
   private clearNoiseGUI() {
     if(!this.mainGUI || !this.layerGUI) { return }
 
@@ -115,6 +123,7 @@ export class NoiseController {
     this.layerGUI = this.mainGUI.addFolder('noise layer')
   }
 
+  /** changes the current layer for a new one based on the given type */
   changeNoiseType(type: NoiseTypes) {
     if(!this.mainGUI || !this.layerGUI) { return }
 
@@ -130,6 +139,7 @@ export class NoiseController {
     new_layer.generateGui(this.layerGUI)
   }
 
+  /** generates the gui */
   generateGUI(gui: GUI = new GUI()) {
     this.mainGUI = gui
 
@@ -140,11 +150,13 @@ export class NoiseController {
     this.layerGUI = gui.addFolder('noise layer')
   }
 
+  /** sets the gpu specs that will be used by the layers */
   setGPUSpecs(specs: GPUSpecs) {
     this.gpuSpecs = specs
     this.initializeLayers(this.gpuSpecs)
   }
 
+  /** removes the gui */
   destroyGUI() { destroyGUIrecursive(this.mainGUI) }
 
   //TODO: only layers after the one that got changed need to be recalculated!
@@ -184,6 +196,7 @@ export class NoiseController {
     }
   }
 
+  /** wether the elevation and position data are initialized or not */
   isElevationDataInitialized() { return (this.baseElevationDataCache && this.positionDataCache) }
 
   /**
@@ -206,6 +219,7 @@ export class NoiseController {
     destroyGUIrecursive(this.mainGUI)
   }
 
+  /** returns an object representing the controller's data */
   getJson(): NoiseControllerData {
     return {
       version: JSON_VERSION,
@@ -217,6 +231,7 @@ export class NoiseController {
 
 const JSON_VERSION = 0.1
 
+/** returns the class corresponding to the noise type */
 export function noiseLayerFromType(type: NoiseTypes): typeof NoiseLayer {
   switch(type) {
     case 'basic': return BasicNoise

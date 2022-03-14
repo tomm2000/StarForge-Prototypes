@@ -37,6 +37,7 @@ export class NoiseLayer {
   setIndex(index: number) { this.layer_index = index }
   getMaskIndex() { return this.maskIndex }
 
+  /** sets the gpu specs for the noise layers, they will be initialized accordingly */
   initGPU({gl, height, width}: GPUSpecs) {
     if(this.gpu) { this.gpu.delete() }
 
@@ -76,9 +77,7 @@ export class NoiseLayer {
     }
   }
 
-  protected getPositionShader() {
-    return getDefaultPositionShader()
-  }
+  protected getPositionShader() { return getDefaultPositionShader() }
 
   /**
    * Applies the noise to the elevation_data with the given position_data
@@ -100,14 +99,15 @@ export class NoiseLayer {
     return this.gpu.getPixels()
   }
 
+  /** @returns the uniforms the shader needs */
   protected getUniforms(): GPGPUuniform[] {
-
     return [
       {type: 'uniform1i', name: 'is_masked', value: this.maskIndex >= 0 ? 1 : 0},
       {type: 'uniform1i', name: 'mask_only', value: this.maskOnly ? 1 : 0}
     ]
   }
 
+  /** creates the gui for the layer */
   generateGui(gui: GUI): GUI {
     gui.open()
 
@@ -119,10 +119,12 @@ export class NoiseLayer {
     return gui
   }
 
-  getGui() {
-    return this.gui
-  }
+  getGui() { return this.gui }
 
+  /**
+   * disposes of the resouces used by the layer
+   * @param destroy_gui wether to delete the gui or not
+   */
   dispose(destroy_gui: boolean = true) {
     this.gpu?.delete()
     if(destroy_gui) {
@@ -130,11 +132,13 @@ export class NoiseLayer {
     }
   }
 
+  /** @returns a json representation of the layer */
   getJson(): NoiseLayerData {
     const { noiseType, maskIndex, maskOnly } = this
     return { version: JSON_VERSION, noiseType, maskIndex, maskOnly }
   }
 
+  /** creates a new layer with the given data */
   static fromJson(data: NoiseLayerData, layer_class: typeof NoiseLayer, controller: NoiseController, index: number): NoiseLayer {
     const layer = new layer_class(undefined, controller, index)
     for(let k in data) {
