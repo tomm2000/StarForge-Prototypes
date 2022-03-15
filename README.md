@@ -8,7 +8,7 @@ The plan is to use the (eventual) final version of this project for another stan
 
 [live demo](https://tomm2000.github.io/StarForge-Prototypes/)
 
-## How to compile:
+## How to run:
 to run the project in development mode
 ```
 yarn dev
@@ -24,7 +24,9 @@ yarn deploy
 
 ---
 
-## Resources used:
+## Main resources used:
+- ### [Nuxtjs](https://nuxtjs.org/)
+  for the html
 - ### [Babylon js](https://www.babylonjs.com/):
   for most of the 3D stuff
 - ### [dat.gui](https://github.com/dataarts/dat.gui)
