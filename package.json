@@ -13,6 +13,7 @@
     "babylonjs": "^5.0.0-beta.11",
     "core-js": "^3.19.3",
     "dat.gui": "^0.7.7",
+    "firebase": "^9.6.8",
     "nuxt": "^2.15.8",
     "open-simplex-noise": "^2.5.0",
     "p5": "^1.4.1",

@@ -1,10 +1,6 @@
 <template>
 <div id="main_container">
   <router-link id="home-link" to="/">home</router-link>
-  <div id="planet_adders">
-    <input type="file" minlength="1" id="file_upload" @change="upload">
-    <input type="button" minlength="1" id="add_planet" @click="add_planet" value="add empty planet">
-  </div>
   <div id="divFps">fps: </div>
   <div id="animation_container">
       <!-- Animation -->
@@ -16,37 +12,28 @@
 <script lang="ts">
 import Vue from 'vue'
 import { Universe } from '@/mechanics/terrain_generation/test12/Universe'
-// import { PlanetDataJson } from '~/mechanics/terrain_generation/test12/common/PlanetData/PlanetDataJson';
+import { initFirebaseApp } from '~/mechanics/firebase/init';
+import { fetchSchematics } from '~/mechanics/terrain_generation/test12/database/schematics'
 
 type component_data = {
-  universe: Universe | undefined
+  universe: Universe | undefined,
+  schematics: any
 }
 
 export default Vue.extend({
   name: 'IndexPage',
   data: () => { let data: component_data = {
-    universe: undefined
+    universe: undefined,
+    schematics: undefined
   }; return data },
+  computed: { },
   mounted() {
+    initFirebaseApp()
+
     let canvas = document.getElementById('animation_canvas') as HTMLCanvasElement
     this.universe = new Universe(canvas)
   },
-  methods: {
-    upload(file: any) {
-      let fr = new FileReader()
-
-      fr.readAsText(file.target.files[0])
-
-      fr.onload = () => {
-        if(typeof fr.result != 'string') { return }
-
-        this.universe?.addPlanetFromData(fr.result)
-      }
-    },
-    add_planet() {
-      this.universe?.addPlanet()
-    }
-  },
+  methods: {  },
   destroyed() {
     // console.log('destroy')
     this.universe?.dispose()
@@ -68,7 +55,7 @@ body { margin: 0; padding: 0; max-height: 100vh; max-width: 100vw; }
   box-sizing: border-box;
 
   display: grid;
-  grid-template-rows: 1fr 1fr 14fr 1fr;
+  grid-template-rows: 1fr 14fr 1fr;
 
 }
 
@@ -80,24 +67,12 @@ body { margin: 0; padding: 0; max-height: 100vh; max-width: 100vw; }
   width: fit-content;
 }
 
-#planet_adders {
-  grid-row: 2;
-}
-
-#file_upload {
-  width: fit-content;
-}
-
-#add_planet {
-  margin-left: 10em;
-  width: fit-content;
-}
 
 #animation_container {
   /* max-width: 90vw; */
   /* max-height: 10%; */
   /* box-sizing: border-box; */
-  grid-row: 3;
+  grid-row: 2;
   display: flex;
   justify-content: center;
   /* align-items: center; */

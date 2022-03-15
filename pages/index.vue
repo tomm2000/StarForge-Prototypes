@@ -23,10 +23,14 @@
 
 <script lang="ts">
 import Vue from 'vue'
+import { initFirebaseApp } from '~/mechanics/firebase/init'
 
 
 export default Vue.extend({
   name: 'IndexPage',
+  mounted() {
+    initFirebaseApp()
+  }
 })
 </script>
 

@@ -1,9 +1,13 @@
-import { GUI } from "dat.gui";
+import { GUI, GUIController } from "dat.gui";
 import { destroyGUIrecursive } from "../lib/GUI";
 import { BasicNoise } from "./Noise/BasicNoise";
 import { NoiseController, NoiseControllerData, noiseControllerFromJson, NoiseTypes } from "./NoiseController";
 import { NoiseLayer } from "./Noise/NoiseLayer";
 import { download } from "../lib/downloader";
+import { TestPlanet } from "../PlanetGenerators/TestPlanet";
+import { fetchSchematics } from "../database/schematics";
+import { getDownloadURL, ref } from "firebase/storage";
+import { getFirebaseApp } from "~/mechanics/firebase/init";
 
 export type PlanetTypes = 'terrestrial1'
 
@@ -19,23 +23,40 @@ export class PlanetData {
   waterLevel: number = 0
 
   noise_controller: NoiseController
+  private parent: TestPlanet
 
   private gui: GUI | undefined
+  private schematicListGui: GUIController | undefined
 
-  constructor(controllerData?: NoiseControllerData) {
+  private _schematicFile: string = ''
+  private set schematicFile(name: string) {
+    this._schematicFile = name
+    this.loadSchematic(name)
+  }
+  private get schematicFile() { return this._schematicFile }
+
+  constructor(parent: TestPlanet, controllerData?: NoiseControllerData) {
     if(controllerData) {
       this.noise_controller = noiseControllerFromJson(controllerData)
     } else {
       this.noise_controller = new NoiseController()
     }
-  }
 
+    this.parent = parent
+
+    fetchSchematics()
+      .then(res => {
+        this.schematicListGui?.options(res)
+      })
+  }
 
   generateGuiFolder(gui: GUI = new GUI()) {
     this.gui = gui
 
     const folder = gui.addFolder('planet data')
     folder.add(this, 'downloadJson')
+    folder.add(this, 'resetData')
+    this.schematicListGui = folder.add(this, 'schematicFile', [])
     folder.add(this, 'radius', 0.1, 2, 0.01)
     // folder.add(this, 'globalMinHeight', -1, 1, 0.001)
     folder.add(this, 'seed', 0, 9999)
@@ -66,7 +87,25 @@ export class PlanetData {
     download('planet_data.json', this.getJson())
   }
 
-  static fromJson(data: string): PlanetData {
+  resetData(data?: string) {
+    if(data) {
+      this.parent.resetPlanetData(PlanetData.fromJson(this.parent, data))
+    } else {
+      this.parent.resetPlanetData()
+    }
+  }
+
+  private async loadSchematic(filename: string) {
+    const fileRef = ref(getFirebaseApp().storage, `planet_schematics/${filename}`)
+
+    const url = await getDownloadURL(fileRef)
+    const req = await fetch(url)
+    const data = await req.json()
+
+    this.resetData(JSON.stringify(data))
+  }
+
+  static fromJson(parent: TestPlanet, data: string): PlanetData {
     const json = JSON.parse(data)
 
     if(
@@ -83,7 +122,7 @@ export class PlanetData {
       throw 'error with the planet data'
     }
 
-    const p_data = new PlanetData(json.noise_controller_data)
+    const p_data = new PlanetData(parent, json.noise_controller_data)
     // const p_data = new PlanetData()
 
     // console.log(json.noise_controller_data)

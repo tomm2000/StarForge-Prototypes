@@ -39,6 +39,8 @@ export class IcoSphereMesh {
     this.material = material
     this.mesh.material = this.material
   }
+
+  setNoisecontroller(noise_controller: NoiseController) { this.noise_controller = noise_controller }
   //---------------------------
 
   /** updates the position of the points on the object, does **NOT** generate a new geometry (resolution changes have no effect!) */
@@ -83,6 +85,7 @@ export class IcoSphereMesh {
 
   /** generates a new mesh from scratch */
   generateNewMesh(): Mesh {
+    this.mesh?.dispose()
     this.mesh = MeshBuilder.CreateIcoSphere('icosphere', {subdivisions: this.resolution, updatable: true, flat: false}, this.scene)
 
     /* along with 'flat: false', disables low poly */

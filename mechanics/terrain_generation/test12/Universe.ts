@@ -12,9 +12,11 @@ import {
   Color3,
   Color4,
 } from "babylonjs";
+import { listAll, ref } from "firebase/storage";
 import { IcoSphereMesh } from "./IcoSphere/IcoSphereMesh";
 import { BasicNoise } from "./ObjectData/Noise/BasicNoise";
 import { TestPlanet } from "./PlanetGenerators/TestPlanet";
+import { getFirebaseApp } from '../../firebase/init'
 // import { Terrestrial1 } from "./PlanetPrefabs/Terrestial1";
 
 export class Universe {
@@ -46,18 +48,6 @@ export class Universe {
     for(let i = 0; i < n; i++) {
       this.planets.push(new TestPlanet(this.scene, undefined))
     }
-  }
-
-  addPlanetFromData(data: string) {
-    if(this.planets[0]) { this.planets[0]?.dispose() }
-    
-    this.planets[0] = new TestPlanet(this.scene, undefined, data)
-  }
-
-  addPlanet() {
-    if(this.planets[0]) { this.planets[0]?.dispose() }
-    
-    this.planets[0] = new TestPlanet(this.scene)
   }
 
   private getNewScene(engine: Engine, canvas: HTMLCanvasElement): Scene {

@@ -18,7 +18,7 @@ export class TestPlanet {
   constructor(scene: Scene, radius: number = 1, planetData?: string) {
     this.scene = scene;
 
-    this.planetData = planetData ? PlanetData.fromJson(planetData) : new PlanetData()
+    this.planetData = planetData ? PlanetData.fromJson(this, planetData) : new PlanetData(this)
 
     this.createGui()
 
@@ -56,6 +56,23 @@ export class TestPlanet {
   reload() {
     this.icoSphereMesh.updateMesh()
     this.updateMaterialNodes()
+  }
+
+  resetPlanetData(planetData?: PlanetData) {
+    this.planetData.dispose()
+
+    planetData = planetData || new PlanetData(this)
+
+    this.planetData = planetData
+    this.icoSphereMesh.setNoisecontroller(this.planetData.noise_controller)
+    this.createGui()
+    
+    this.icoSphereMesh.generateNewMesh()
+
+    NodeMaterial.ParseFromSnippetAsync(this.planetData.materialId, this.scene).then(nodeMaterial => {
+      this.icoSphereMesh.setMaterial(nodeMaterial)
+      this.updateMaterialNodes()
+    })
   }
 
   dispose() {

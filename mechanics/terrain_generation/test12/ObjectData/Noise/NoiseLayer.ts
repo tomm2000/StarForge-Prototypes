@@ -142,7 +142,7 @@ export class NoiseLayer {
   static fromJson(data: NoiseLayerData, layer_class: typeof NoiseLayer, controller: NoiseController, index: number): NoiseLayer {
     const layer = new layer_class(undefined, controller, index)
     for(let k in data) {
-      if((layer as any)[k] && k != 'version' && k != 'noiseType') {
+      if((layer as any)[k] != undefined && k != 'version' && k != 'noiseType') {
         (layer as any)[k] = data[k]
       }
     }
