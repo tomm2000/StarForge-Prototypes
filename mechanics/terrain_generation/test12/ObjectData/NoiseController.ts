@@ -41,7 +41,7 @@ export class NoiseController {
   private indexGUI: GUIController | undefined
   private layerGUI: GUI | undefined
 
-  constructor() {
+  private constructor() {
     this.generateGUI()
   }
 
@@ -127,7 +127,7 @@ export class NoiseController {
   changeNoiseType(type: NoiseTypes) {
     if(!this.mainGUI || !this.layerGUI) { return }
 
-    const layer_class: typeof NoiseLayer = noiseLayerFromType(type)
+    const layer_class: typeof NoiseLayer = noiseEnum[type]
     const new_layer = new layer_class(this.gpuSpecs, this, this.currentLayer)
 
     //---- switch the current noise for the new one ----
@@ -227,38 +227,45 @@ export class NoiseController {
       layers: this.noiseLayers.map(layer => layer.getJson())
     }
   }
+
+  static fromJson(data: string): NoiseController {
+    const json: NoiseControllerData = JSON.parse(data)
+
+    if(json.version != JSON_VERSION) { throw 'wrong json version for controller' }
+  
+    const controller = new NoiseController()
+  
+    json.layers.forEach((layer, index) => {
+      const new_layer = NoiseLayer.fromJson(layer, noiseEnum[layer.noiseType], controller, index)
+      controller.addLayer(new_layer)
+    })
+  
+    return controller
+  }
+
+  static makeEmpty(): NoiseController {
+    return new NoiseController()
+  }
 }
 
 const JSON_VERSION = 0.1
 
-/** returns the class corresponding to the noise type */
-export function noiseLayerFromType(type: NoiseTypes): typeof NoiseLayer {
-  switch(type) {
-    case 'basic': return BasicNoise
-    case 'default': return NoiseLayer
-    case 'positive': return PositiveNoise
-    case 'ridge': return RidgeNoise
-    case 'ocean_modifier': return OceanModifier
-    case 'mask': return MaskNoise
-    default: throw 'undefined noise type'
-  }
+type noiseEnumType = {
+  [key in NoiseTypes]: typeof NoiseLayer;
+};
+
+
+export const noiseEnum: noiseEnumType = {
+  'basic': BasicNoise,
+  'default': NoiseLayer,
+  'mask': MaskNoise,
+  'ocean_modifier': OceanModifier,
+  'positive': PositiveNoise,
+  'ridge': RidgeNoise
 }
 
 export type NoiseControllerData = {
   version: number,
   layer_amount: number,
   layers: NoiseLayerData[]
-}
-
-export function noiseControllerFromJson(data: NoiseControllerData) {
-  if(data.version != JSON_VERSION) { throw 'wrong json version for controller'}
-
-  const controller = new NoiseController()
-
-  data.layers.forEach((layer, index) => {
-    const new_layer = NoiseLayer.fromJson(layer, noiseLayerFromType(layer.noiseType), controller, index)
-    controller.addLayer(new_layer)
-  })
-
-  return controller
 }

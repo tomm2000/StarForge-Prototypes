@@ -116,7 +116,7 @@ yarn deploy
 
   - reworked noise system (again), now with separated steps and files for each noise step
   - reworked ui (again) to work with the new noise system
-  - re-added support for loading and downloading
+  - re-added support for loading and downloading schematics (now with firebase)
   - re-added support for masks
 </details>
 

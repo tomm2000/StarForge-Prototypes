@@ -15,14 +15,14 @@ import {
 import { listAll, ref } from "firebase/storage";
 import { IcoSphereMesh } from "./IcoSphere/IcoSphereMesh";
 import { BasicNoise } from "./ObjectData/Noise/BasicNoise";
-import { TestPlanet } from "./PlanetGenerators/TestPlanet";
+import { Planet } from "./PlanetGenerators/Planet";
 import { getFirebaseApp } from '../../firebase/init'
 // import { Terrestrial1 } from "./PlanetPrefabs/Terrestial1";
 
 export class Universe {
   private scene: Scene;
   private engine: Engine;
-  private planets: TestPlanet[] = [];
+  private planets: Planet[] = [];
   private divFps: HTMLElement | null
 
   constructor(canvas: HTMLCanvasElement) {
@@ -46,7 +46,7 @@ export class Universe {
 
     const n = 1
     for(let i = 0; i < n; i++) {
-      this.planets.push(new TestPlanet(this.scene, undefined))
+      this.planets.push(Planet.makeEmpty(this.scene))
     }
   }
 

@@ -1,139 +1,98 @@
-import { GUI, GUIController } from "dat.gui";
+import { GUI } from "dat.gui";
 import { destroyGUIrecursive } from "../lib/GUI";
-import { BasicNoise } from "./Noise/BasicNoise";
-import { NoiseController, NoiseControllerData, noiseControllerFromJson, NoiseTypes } from "./NoiseController";
-import { NoiseLayer } from "./Noise/NoiseLayer";
-import { download } from "../lib/downloader";
-import { TestPlanet } from "../PlanetGenerators/TestPlanet";
-import { fetchSchematics } from "../database/schematics";
-import { getDownloadURL, ref } from "firebase/storage";
-import { getFirebaseApp } from "~/mechanics/firebase/init";
+import { NoiseController } from "./NoiseController";
 
 export type PlanetTypes = 'terrestrial1'
 
 export const planetTypeList: PlanetTypes[] = ['terrestrial1']
 
 export class PlanetData {
-  type: PlanetTypes = 'terrestrial1'
-  radius: number = 1
-  seed: number = Math.floor(Math.random() * 9999)
-  // https://nme.babylonjs.com/#XRRVZX#49
-  materialId: string = 'XRRVZX#49'
-  materialHeightMultiplier: number = 1
-  waterLevel: number = 0
+  //---- data
+  private type: PlanetTypes = 'terrestrial1'
+  private radius: number = 1
+  private seed: number = Math.floor(Math.random() * 9999)
+  private materialId: string = 'XRRVZX#49'
+  private materialHeightMultiplier: number = 1
+  private waterLevel: number = 0
+  private minHeight: number = 0
+  private maxHeight: number = 0
 
-  noise_controller: NoiseController
-  private parent: TestPlanet
+  //---- parts
+  private noise_controller: NoiseController
 
+  //---- GUI
   private gui: GUI | undefined
-  private schematicListGui: GUIController | undefined
 
-  private _schematicFile: string = ''
-  private set schematicFile(name: string) {
-    this._schematicFile = name
-    this.loadSchematic(name)
+  generateGui(gui: GUI): GUI {
+    this.gui = gui.addFolder('planet data')
+
+    this.gui.add(this, 'radius', 0.1, 2, 0.01)
+    this.gui.add(this, 'seed', 0, 9999)
+    this.gui.add(this, 'waterLevel', 0, 2, 0.01)
+
+    this.gui.open()
+
+    return this.gui
   }
-  private get schematicFile() { return this._schematicFile }
 
-  constructor(parent: TestPlanet, controllerData?: NoiseControllerData) {
-    if(controllerData) {
-      this.noise_controller = noiseControllerFromJson(controllerData)
-    } else {
-      this.noise_controller = new NoiseController()
+  // ---- CONSTRUCTORS & DESTRUCTORS ----
+  private constructor(noise_controller: NoiseController) {
+    this.noise_controller = noise_controller
+  }
+
+  static fromJson(data: string): PlanetData {
+    const json: any = JSON.parse(data)
+
+    if(json.version != JSON_VERSION) { throw 'wrong json version for controller' }
+
+    const controller = NoiseController.fromJson(JSON.stringify(json.noise_controller_data))
+
+    const planetData = new PlanetData(controller)
+
+    for(let k in json) {
+      if((planetData as any)[k] != undefined && k != 'version') {
+        (planetData as any)[k] = json[k]
+      }
     }
 
-    this.parent = parent
-
-    fetchSchematics()
-      .then(res => {
-        this.schematicListGui?.options(res)
-      })
+    return planetData
   }
 
-  generateGuiFolder(gui: GUI = new GUI()) {
-    this.gui = gui
+  static makeEmpty() { return new PlanetData(NoiseController.makeEmpty()) }
+  //-------------------------------------
 
-    const folder = gui.addFolder('planet data')
-    folder.add(this, 'downloadJson')
-    folder.add(this, 'resetData')
-    this.schematicListGui = folder.add(this, 'schematicFile', [])
-    folder.add(this, 'radius', 0.1, 2, 0.01)
-    // folder.add(this, 'globalMinHeight', -1, 1, 0.001)
-    folder.add(this, 'seed', 0, 9999)
-    folder.add(this, 'waterLevel', 0, 2, 0.01)
-    // folder.add(this, 'materialHeightMultiplier', 0, 1, 0.01)
+  //---- GETTERS & SETTERS ----
+  setMinHeight(value: number) { this.minHeight = value }
+  setMaxHeight(value: number) { this.maxHeight = value }
+  setMinMaxHeight(min: number, max: number) { this.minHeight = min; this.maxHeight = max }
+  getMinHeight() { return this.minHeight }
+  getMaxHeight() { return this.maxHeight }
 
-    folder.open()
-  }
+  getNoiseController() { return this.noise_controller }
+  //---------------------------
 
   dispose() {
-    destroyGUIrecursive(this.gui) 
     this.noise_controller.dispose()
+    destroyGUIrecursive(this.gui)
   }
-
+  
+  //---- JSON ----
   getJson(): string {
-    const { type, radius, seed, waterLevel, materialHeightMultiplier, materialId } = this
+    const data: any = {}
 
-    const noise_controller_data = this.noise_controller.getJson()
+    const properites = Object.getOwnPropertyNames(this)
 
-    const data = {
-      type, version: 0.1, radius, seed, waterLevel, materialId, materialHeightMultiplier, noise_controller_data
+    for(let k of properites) {
+      if(k != 'gui' && k != 'noise_controller' && k != '__ob__') {
+        data[k] = (this as any)[k]
+      }
     }
+
+    data.noise_controller = this.noise_controller.getJson()
 
     return JSON.stringify(data)
   }
-
-  downloadJson() {
-    download('planet_data.json', this.getJson())
-  }
-
-  resetData(data?: string) {
-    if(data) {
-      this.parent.resetPlanetData(PlanetData.fromJson(this.parent, data))
-    } else {
-      this.parent.resetPlanetData()
-    }
-  }
-
-  private async loadSchematic(filename: string) {
-    const fileRef = ref(getFirebaseApp().storage, `planet_schematics/${filename}`)
-
-    const url = await getDownloadURL(fileRef)
-    const req = await fetch(url)
-    const data = await req.json()
-
-    this.resetData(JSON.stringify(data))
-  }
-
-  static fromJson(parent: TestPlanet, data: string): PlanetData {
-    const json = JSON.parse(data)
-
-    if(
-      json.type == undefined ||
-      json.version == undefined ||
-      json.radius == undefined ||
-      json.seed == undefined ||
-      json.waterLevel == undefined ||
-      json.materialId == undefined ||
-      json.materialHeightMultiplier == undefined ||
-      json.noise_controller_data == undefined
-    ) {
-      console.table(json)
-      throw 'error with the planet data'
-    }
-
-    const p_data = new PlanetData(parent, json.noise_controller_data)
-    // const p_data = new PlanetData()
-
-    // console.log(json.noise_controller_data)
-
-    p_data.type = json.type
-    p_data.waterLevel = json.waterLevel
-    p_data.radius = json.radius
-    p_data.seed = json.seed
-    p_data.materialId = json.materialId
-    p_data.materialHeightMultiplier = json.materialHeightMultiplier
-
-    return p_data
-  }
 }
+
+
+const JSON_VERSION = 0.1
