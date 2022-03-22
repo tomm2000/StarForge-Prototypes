@@ -1,11 +1,11 @@
 import { GUI, GUIController } from "dat.gui";
-import { destroyGUIrecursive } from "../lib/GUI";
-import { BasicNoise } from "./Noise/BasicNoise";
-import { MaskNoise } from "./Noise/MaskNoise";
-import { NoiseLayer, NoiseLayerData } from "./Noise/NoiseLayer";
-import { OceanModifier } from "./Noise/OceanModifier";
-import { PositiveNoise } from "./Noise/PositiveNoise";
-import { RidgeNoise } from "./Noise/RidgeNoise";
+import { destroyGUIrecursive } from "../../lib/GUI";
+import { BasicNoise } from "../noise_layer/BasicNoise";
+import { MaskNoise } from "../noise_layer/MaskNoise";
+import { NoiseLayer, NoiseLayerData } from "../noise_layer/NoiseLayer";
+import { OceanModifier } from "../noise_layer/OceanModifier";
+import { PositiveNoise } from "../noise_layer/PositiveNoise";
+import { RidgeNoise } from "../noise_layer/RidgeNoise";
 
 export type NoiseTypes = 'default' | 'basic' | 'positive' | 'ridge' | 'ocean_modifier' | 'mask'
 export const NoiseTypeList: NoiseTypes[] = ['default', 'basic', 'positive', 'ridge', 'ocean_modifier', 'mask']
@@ -222,16 +222,14 @@ export class NoiseController {
   /** returns an object representing the controller's data */
   getJson(): NoiseControllerData {
     return {
-      version: JSON_VERSION,
       layer_amount: this.noiseLayers.length,
       layers: this.noiseLayers.map(layer => layer.getJson())
     }
   }
 
   static fromJson(data: string): NoiseController {
+    // console.log(data)
     const json: NoiseControllerData = JSON.parse(data)
-
-    if(json.version != JSON_VERSION) { throw 'wrong json version for controller' }
   
     const controller = new NoiseController()
   
@@ -248,8 +246,6 @@ export class NoiseController {
   }
 }
 
-const JSON_VERSION = 0.1
-
 type noiseEnumType = {
   [key in NoiseTypes]: typeof NoiseLayer;
 };
@@ -265,7 +261,6 @@ export const noiseEnum: noiseEnumType = {
 }
 
 export type NoiseControllerData = {
-  version: number,
   layer_amount: number,
   layers: NoiseLayerData[]
 }

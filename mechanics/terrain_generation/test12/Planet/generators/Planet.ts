@@ -1,14 +1,14 @@
 import { Scene } from "babylonjs";
 import { GUI, GUIController } from "dat.gui";
-import { fetchSchematics, loadSchematic } from "../database/schematics";
-import { IcoSphereMesh } from "../IcoSphere/IcoSphereMesh";
-import { download } from "../lib/downloader";
-import { destroyGUIrecursive } from "../lib/GUI";
-import { PlanetData } from "../ObjectData/PlanetData";
+import { fetchSchematics, loadSchematic } from "../../database/schematics";
+import { IcoSphereMesh } from "../../IcoSphere/IcoSphereMesh";
+import { download } from "../../lib/downloader";
+import { destroyGUIrecursive } from "../../lib/GUI";
+import { DataController } from "../planet_data/DataController";
 
 export class Planet {
   //---- data
-  private planetData: PlanetData 
+  private dataController: DataController 
   private _schematicFile: string = ''
   get schematicFile() { return this._schematicFile }
   set schematicFile(value: string) {
@@ -30,9 +30,9 @@ export class Planet {
   private updateInterval: NodeJS.Timer | undefined
 
   // ---- CONSTRUCTORS & DESTRUCTORS ----
-  private constructor(scene: Scene, planetData: PlanetData) {
+  private constructor(scene: Scene, planetData: DataController) {
     this.scene = scene;
-    this.planetData = planetData
+    this.dataController = planetData
 
     this.initUpdate()
     this.generateGUI()
@@ -40,20 +40,20 @@ export class Planet {
   }
 
   static fromJson(scene: Scene, data: string): Planet {
-    return new Planet(scene, PlanetData.fromJson(data))
+    return new Planet(scene, DataController.fromJson(data, scene))
   }
 
   static makeEmpty(scene: Scene) {
-    return new Planet(scene, PlanetData.makeEmpty())
+    return new Planet(scene, DataController.makeEmpty(scene))
   }
 
   regen(data?: string) {
-    this.planetData.dispose()
+    this.dataController.dispose()
     destroyGUIrecursive(this.mainGUI)
 
-    const planetData = data ? PlanetData.fromJson(data) : PlanetData.makeEmpty()
+    const planetData = data ? DataController.fromJson(data, this.scene) : DataController.makeEmpty(this.scene)
 
-    this.planetData = planetData
+    this.dataController = planetData
 
     this.setMesh(this.generateMesh())
     this.generateGUI()
@@ -61,7 +61,7 @@ export class Planet {
 
   dispose() {
     destroyGUIrecursive(this.mainGUI)
-    this.planetData.dispose()
+    this.dataController.dispose()
     this.mesh?.dispose()
     this.stopUpdate()
   }
@@ -84,7 +84,7 @@ export class Planet {
 
   //---- mesh ----
   generateMesh(): IcoSphereMesh {
-    const mesh = new IcoSphereMesh(this.scene, undefined, this.planetData)
+    const mesh = new IcoSphereMesh(this.scene, undefined, this.dataController)
     mesh.generateNewMesh()
 
     return mesh
@@ -106,14 +106,14 @@ export class Planet {
     folder.add(this, 'autoUpdate')
     folder.add(this, 'update')
     folder.add(this, 'downloadJson')
-    folder.add(this, 'uploadJson')
+    // folder.add(this, 'uploadJson')
     folder.add(this, 'resetPlanet')
 
     this.schematicGUI = folder.add(this, 'schematicFile', [])
 
     folder.open()
 
-    this.dataGUI = this.planetData.generateGui(this.mainGUI)
+    this.dataGUI = this.dataController.generateGui(this.mainGUI)
     
     this.updateSchematicList()
   }
@@ -124,7 +124,7 @@ export class Planet {
   }
 
   downloadJson() {
-    download('planet_data.json', this.planetData.getJson())
+    download('planet_data.json', this.dataController.getJson())
   }
   uploadJson() { }
   resetPlanet() { this.regen() }

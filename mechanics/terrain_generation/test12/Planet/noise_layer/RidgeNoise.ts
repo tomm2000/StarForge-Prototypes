@@ -1,6 +1,6 @@
-import { getDefaultPositionShaderVertex, positionShader } from "../positionShader";
+import { getDefaultPositionShaderVertex, positionShader } from "../misc/positionShader";
 import { noise3D } from "../../lib/GlslNoise";
-import { GPUSpecs, NoiseController } from "../NoiseController";
+import { GPUSpecs, NoiseController } from "../planet_data/NoiseController";
 import { BasicNoise } from "./BasicNoise";
 import { texture_unifomrs } from "../../lib/GlslSnippets";
 

@@ -1,10 +1,9 @@
 import { Mesh, Scene, MeshBuilder, Material, } from "babylonjs"
-import { GPUSpecs, NoiseController } from "../ObjectData/NoiseController"
-import { NoiseLayer } from '../ObjectData/Noise/NoiseLayer'
-import { PlanetData } from "../ObjectData/PlanetData"
+import { GPUSpecs, NoiseController } from "../Planet/planet_data/NoiseController"
+import { NoiseLayer } from '../Planet/noise_layer/NoiseLayer'
+import { DataController } from "../Planet/planet_data/DataController"
 
 export class IcoSphereMesh {
-  private material: Material | undefined
   private scene: Scene
   private gpu_init: GPUSpecs | undefined
 
@@ -13,13 +12,14 @@ export class IcoSphereMesh {
   private originalPositionData:  Float32Array | undefined
   private originalElevationData: Float32Array | undefined
   private mesh: Mesh
+  private materialID: number | undefined
 
   //---- data
   private resolution: number = 10
-  private planet_data: PlanetData
+  private data_controller: DataController
 
-  constructor(scene: Scene, resolution: number = 64, planet_data: PlanetData) {
-    this.planet_data = planet_data
+  constructor(scene: Scene, resolution: number = 64, data_controller: DataController) {
+    this.data_controller = data_controller
     this.resolution = resolution
     this.scene = scene
     this.mesh = this.generateNewMesh()
@@ -32,13 +32,6 @@ export class IcoSphereMesh {
     this.resolution = resolution
     this.generateNewMesh()
   }
-
-  getMaterial(): Material | undefined { return this.material }
-  /** sets the new material, does **NOT** regenerate the mesh! */
-  setMaterial(material: Material): void {
-    this.material = material
-    this.mesh.material = this.material
-  }
   //---------------------------
 
   /** updates the position of the points on the object, does **NOT** generate a new geometry (resolution changes have no effect!) */
@@ -49,7 +42,7 @@ export class IcoSphereMesh {
 
     this.mesh.updateMeshPositions((data) => {
 
-      const noise_controller = this.planet_data.getNoiseController()
+      const noise_controller = this.data_controller.getNoiseController()
 
       if(noise_controller.isElevationDataInitialized()) {
         noise_controller.applyLayers()
@@ -78,8 +71,10 @@ export class IcoSphereMesh {
         min_elevation = Math.min(min_elevation, elevation)
       }
 
-      this.planet_data.setMinMaxHeight(min_elevation, max_elevation)
+      this.data_controller.setMinMaxHeight(min_elevation, max_elevation)
     }, true)
+
+    this.materialID = this.data_controller.getMaterialController().updateMeshMaterial(this.mesh, this.materialID)
   }
 
   /** generates a new mesh from scratch */
@@ -129,7 +124,7 @@ export class IcoSphereMesh {
       /*, gl: GPGPU.createWebglContext(w, h) */
     }
 
-    this.planet_data.getNoiseController().setGPUSpecs(this.gpu_init)
+    this.data_controller.getNoiseController().setGPUSpecs(this.gpu_init)
     //-----------------------------------------------
 
     this.updateMesh()

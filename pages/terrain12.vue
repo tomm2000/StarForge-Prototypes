@@ -2,6 +2,7 @@
 <div id="main_container">
   <router-link id="home-link" to="/">home</router-link>
   <div id="divFps">fps: </div>
+  <input type="file" minlength="1" id="file_upload" @change="upload">
   <div id="animation_container">
       <!-- Animation -->
     <canvas class="webgl" id="animation_canvas"></canvas>
@@ -33,7 +34,18 @@ export default Vue.extend({
     let canvas = document.getElementById('animation_canvas') as HTMLCanvasElement
     this.universe = new Universe(canvas)
   },
-  methods: {  },
+  methods: {
+    upload(file: any) {
+      let fr = new FileReader()
+
+      fr.readAsText(file.target.files[0])
+
+      fr.onload = () => {
+        if(typeof fr.result != 'string') { return }
+
+        this.universe?.setPlanetFromJson(fr.result)
+      }
+    },},
   destroyed() {
     // console.log('destroy')
     this.universe?.dispose()

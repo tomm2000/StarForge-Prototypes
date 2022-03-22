@@ -1,5 +1,5 @@
-import { texture_unifomrs } from "../lib/GlslSnippets"
-import { GPGPUuniform } from "../lib/GPGPU"
+import { texture_unifomrs } from "../../lib/GlslSnippets"
+import { GPGPUuniform } from "../../lib/GPGPU"
 
 export type positionShader = { vertexSource: string, fragmentSource: string, uniforms: positionUniform[] }
 export type positionUniform = GPGPUuniform

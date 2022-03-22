@@ -1,10 +1,10 @@
 import { GUI } from "dat.gui";
-import { getDefaultPositionShader, getDefaultPositionShaderVertex, positionShader } from "../positionShader";
+import { getDefaultPositionShader, getDefaultPositionShaderVertex, positionShader } from "../misc/positionShader";
 import { noise3D } from "../../lib/GlslNoise";
 import { GPGPUuniform } from "../../lib/GPGPU";
-import { PlanetData } from "../PlanetData";
+import { DataController } from "../planet_data/DataController";
 import { NoiseLayer, NoiseLayerData } from "./NoiseLayer";
-import { GPUSpecs, NoiseController } from "../NoiseController";
+import { GPUSpecs, NoiseController } from "../planet_data/NoiseController";
 import { texture_unifomrs } from "../../lib/GlslSnippets";
 
 export class OceanModifier extends NoiseLayer {

@@ -1,9 +1,9 @@
 import { GUI } from "dat.gui";
-import { getDefaultPositionShaderVertex, positionShader } from "../positionShader";
+import { getDefaultPositionShaderVertex, positionShader } from "../misc/positionShader";
 import { noise3D } from "../../lib/GlslNoise";
 import { GPGPUuniform } from "../../lib/GPGPU";
 import { NoiseLayer, NoiseLayerData } from "./NoiseLayer";
-import { GPUSpecs, NoiseController, NoiseTypes } from "../NoiseController";
+import { GPUSpecs, NoiseController, NoiseTypes } from "../planet_data/NoiseController";
 import { texture_unifomrs } from "../../lib/GlslSnippets";
 
 export class BasicNoise extends NoiseLayer {

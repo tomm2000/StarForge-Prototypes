@@ -14,8 +14,8 @@ import {
 } from "babylonjs";
 import { listAll, ref } from "firebase/storage";
 import { IcoSphereMesh } from "./IcoSphere/IcoSphereMesh";
-import { BasicNoise } from "./ObjectData/Noise/BasicNoise";
-import { Planet } from "./PlanetGenerators/Planet";
+import { BasicNoise } from "./Planet/noise_layer/BasicNoise";
+import { Planet } from "./Planet/generators/Planet";
 import { getFirebaseApp } from '../../firebase/init'
 // import { Terrestrial1 } from "./PlanetPrefabs/Terrestial1";
 
@@ -48,6 +48,11 @@ export class Universe {
     for(let i = 0; i < n; i++) {
       this.planets.push(Planet.makeEmpty(this.scene))
     }
+  }
+
+  setPlanetFromJson(data: string) {
+    this.planets[0].dispose()
+    this.planets[0] = Planet.fromJson(this.scene, data)
   }
 
   private getNewScene(engine: Engine, canvas: HTMLCanvasElement): Scene {

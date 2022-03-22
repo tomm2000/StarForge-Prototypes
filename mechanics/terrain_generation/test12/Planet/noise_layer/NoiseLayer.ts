@@ -1,8 +1,8 @@
 import { GUI } from "dat.gui";
-import { getDefaultPositionShader, positionShader } from "../positionShader";
+import { getDefaultPositionShader, positionShader } from "../misc/positionShader";
 import { GPGPU, GPGPUuniform } from "../../lib/GPGPU";
 import { destroyGUIrecursive } from "../../lib/GUI";
-import { GPUSpecs, NoiseController, NoiseTypeList, NoiseTypes } from "../NoiseController";
+import { GPUSpecs, NoiseController, NoiseTypeList, NoiseTypes } from "../planet_data/NoiseController";
 
 export class NoiseLayer {
   protected gpu: GPGPU | undefined
