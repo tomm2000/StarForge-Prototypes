@@ -1,4 +1,5 @@
 import { GUI, GUIController } from "dat.gui";
+import { GPGPU, textureData } from "../../lib/GPGPU";
 import { destroyGUIrecursive } from "../../lib/GUI";
 import { BasicNoise } from "../noise_layer/BasicNoise";
 import { MaskNoise } from "../noise_layer/MaskNoise";
@@ -16,12 +17,13 @@ export type GPUSpecs = {
   gl?: WebGLRenderingContext
 }
 
+
 export class NoiseController {
   private noiseLayers: NoiseLayer[] = []
 
-  private elevationDataCache: Float32Array[] = []
-  private baseElevationDataCache: Float32Array | undefined
-  private positionDataCache: Float32Array | undefined
+  private elevationDataCache: textureData[] = []
+  private baseElevationDataCache: textureData | undefined
+  private positionDataCache: textureData | undefined
 
   private gpuSpecs: GPUSpecs | undefined
 
@@ -153,6 +155,9 @@ export class NoiseController {
   /** sets the gpu specs that will be used by the layers */
   setGPUSpecs(specs: GPUSpecs) {
     this.gpuSpecs = specs
+
+    
+    this.gpuSpecs.gl = GPGPU.createWebglContext(specs.width, specs.height)
     this.initializeLayers(this.gpuSpecs)
   }
 
@@ -166,12 +171,12 @@ export class NoiseController {
    * @param position_data a vec4 array with (x,y,z,/), where x,y,z is a point on the sphere
    * @returns a new updated elevation_data vec4 array
    */
-  applyLayers(elevation_data?: Float32Array, position_data?: Float32Array) {
+  applyLayers(position_data?: Float32Array, elevation_data?: Float32Array) {
     if(!this.gpuSpecs) { throw 'gpu specs not initialized' }
     this.initializeLayers()
 
-    if(elevation_data) { this.baseElevationDataCache = elevation_data }
-    if(position_data)  { this.positionDataCache      = position_data  }
+    if(elevation_data) { this.baseElevationDataCache = new textureData({type: 'array', value: elevation_data}) }
+    if(position_data)  { this.positionDataCache = new textureData({type: 'array', value: position_data }) }
 
     if(!this.baseElevationDataCache || !this.positionDataCache) {
       throw 'elevation and position data are not initialized nor passed!'
@@ -180,17 +185,18 @@ export class NoiseController {
     for(let i = 0; i < this.noiseLayers.length; i++) {
       const layer = this.noiseLayers[i]
 
-      let mask_data: Float32Array | undefined = undefined
+      let mask_data: textureData | undefined = undefined
 
       if(layer.getMaskIndex() >= 0 && layer.getMaskIndex() < i) {
         mask_data = this.elevationDataCache[layer.getMaskIndex()]
       }
 
+
       const el_data = i == 0 ? this.baseElevationDataCache : this.elevationDataCache[i-1]
 
       this.elevationDataCache[i] = layer.applyNoise(
-        el_data,
         this.positionDataCache,
+        el_data,
         mask_data
       )
     }
@@ -207,10 +213,16 @@ export class NoiseController {
   getLayerData(index: number = this.elevationDataCache.length -1): Float32Array {
     if(this.elevationDataCache.length == 0) {
       if(!this.baseElevationDataCache) { throw 'not base elevation data nor any noise layer was initialized'}
+
+      if(this.baseElevationDataCache.val.type == 'texture') { throw 'this error should not happen'}
       
-      return this.baseElevationDataCache
+      return this.baseElevationDataCache.val.value
     } else {
-      return this.elevationDataCache[index]
+      const pixels = this.noiseLayers[index].getPixels()
+
+      if(!pixels) { throw 'noise layer not initialized'}
+
+      return pixels
     }
   }
 

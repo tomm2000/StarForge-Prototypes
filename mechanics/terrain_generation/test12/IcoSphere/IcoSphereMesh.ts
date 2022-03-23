@@ -18,7 +18,7 @@ export class IcoSphereMesh {
   private resolution: number = 10
   private data_controller: DataController
 
-  constructor(scene: Scene, resolution: number = 64, data_controller: DataController) {
+  constructor(scene: Scene, resolution: number = 2, data_controller: DataController) {
     this.data_controller = data_controller
     this.resolution = resolution
     this.scene = scene
@@ -48,8 +48,8 @@ export class IcoSphereMesh {
         noise_controller.applyLayers()
       } else {
         noise_controller.applyLayers(
-          originalElevationData.slice(),
-          originalPositionData.slice() 
+          originalPositionData.slice(),
+          originalElevationData.slice()
         )
       }
 

@@ -1,6 +1,6 @@
 import { GUI } from "dat.gui";
 import { getDefaultPositionShader, positionShader } from "../misc/positionShader";
-import { GPGPU, GPGPUuniform } from "../../lib/GPGPU";
+import { GPGPU, GPGPUuniform, textureData } from "../../lib/GPGPU";
 import { destroyGUIrecursive } from "../../lib/GUI";
 import { GPUSpecs, NoiseController, NoiseTypeList, NoiseTypes } from "../planet_data/NoiseController";
 
@@ -61,7 +61,7 @@ export class NoiseLayer {
    * @param position_data a vec4 array with (x,y,z,/), where x,y,z is a point on the sphere
    * @returns a new updated elevation_data vec4 array
    */
-  protected updateTextures(elevation_data: Float32Array, position_data: Float32Array, mask_data?: Float32Array) {
+  protected updateTextures(position_data: textureData, elevation_data: textureData, mask_data?: textureData) {
     if(!this.gpu) { throw 'initialize gpu first' }
 
     if(this.texture_built) {
@@ -72,7 +72,8 @@ export class NoiseLayer {
     } else {
       this.gpu.makeTexture(position_data)
       this.gpu.makeTexture(elevation_data)
-      this.gpu.makeTexture(mask_data || new Float32Array(0))
+      this.gpu.makeTexture(mask_data || new textureData({type: 'array', value: new Float32Array()})) 
+      
       this.texture_built = true
     }
   }
@@ -85,10 +86,10 @@ export class NoiseLayer {
    * @param position_data a vec4 array with (x,y,z,/), where x,y,z is a point on the sphere
    * @returns a new updated elevation_data vec4 array
    */
-  applyNoise(elevation_data: Float32Array, position_data: Float32Array, mask_data?: Float32Array): Float32Array {
+  applyNoise(position_data: textureData, elevation_data: textureData, mask_data?: textureData): textureData {
     if(!this.gpu) { throw 'initialize gpu first' }
   
-    this.updateTextures(elevation_data, position_data, mask_data)
+    this.updateTextures(position_data, elevation_data, mask_data)
 
     for(let uniform of this.getUniforms()) {
       this.gpu.addUniform(uniform)
@@ -96,7 +97,11 @@ export class NoiseLayer {
 
     this.gpu.draw()
 
-    return this.gpu.getPixels()
+    return new textureData({ type: 'texture', value: this.gpu.getOutputTexture() })
+  }
+
+  getPixels(): Float32Array | undefined {
+    return this.gpu?.getPixels()
   }
 
   /** @returns the uniforms the shader needs */

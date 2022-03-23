@@ -30,6 +30,16 @@ export type integerArrayUniform = {
   type: "uniform1iv"
 }
 
+type textureDataType = { value: Float32Array, type: 'array' } | { value: WebGLTexture, type: 'texture' }
+
+export class textureData {
+  val: textureDataType
+
+  constructor(data: textureDataType) {
+    this.val = data
+  }
+}
+
 /* https://github.com/tomm2000/GPGPU */
 export class GPGPU {
   private ready: boolean
@@ -94,10 +104,15 @@ export class GPGPU {
     return canvas.getContext("webgl", { premultipliedAlpha: false })!
   }
 
-  makeTexture(data: Float32Array, width = this.width, height = this.height) {
+  makeTexture(data: textureData, width = this.width, height = this.height) {
     const index = this.textures.length
 
-    this.textures[index] = { tex: this.gl.createTexture(), width, height }
+    if(data.val.type == 'array') {
+      this.textures[index] = { tex: this.gl.createTexture(), width, height }
+    } else {
+      this.textures[index] = { tex: data.val.value, width, height }
+    }
+
     this.gl.activeTexture((this.gl as any)[`TEXTURE${index}`])
     this.gl.bindTexture(this.gl.TEXTURE_2D, this.textures[index].tex)
 
@@ -106,13 +121,18 @@ export class GPGPU {
     this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_WRAP_S, this.gl.CLAMP_TO_EDGE)
     this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_WRAP_T, this.gl.CLAMP_TO_EDGE)
 
-    this.gl.texImage2D(this.gl.TEXTURE_2D, 0, this.gl.RGBA, width, height, 0, this.gl.RGBA, this.gl.FLOAT, data)
+    if(data.val.type == 'array') {
+      this.gl.texImage2D(this.gl.TEXTURE_2D, 0, this.gl.RGBA, width, height, 0, this.gl.RGBA, this.gl.FLOAT, data.val.value)
+    }
   }
-
-  updateTexture(data: Float32Array, index = 0) {
+  
+  updateTexture(data: textureData, index = 0) {
     const tex = this.textures[index]
+    this.gl.activeTexture((this.gl as any)[`TEXTURE${index}`])
     this.gl.bindTexture(this.gl.TEXTURE_2D, tex.tex)
-    this.gl.texImage2D(this.gl.TEXTURE_2D, 0, this.gl.RGBA, tex.width, tex.height, 0, this.gl.RGBA, this.gl.FLOAT, data)
+    if(data.val.type == 'array') {
+      this.gl.texImage2D(this.gl.TEXTURE_2D, 0, this.gl.RGBA, tex.width, tex.height, 0, this.gl.RGBA, this.gl.FLOAT, data.val.value)
+    }
   }
 
   makeFrameBuffer(width = this.width, height = this.height) {
@@ -126,6 +146,8 @@ export class GPGPU {
     this.framebuffer = this.gl.createFramebuffer()
     this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, this.framebuffer)
     this.gl.framebufferTexture2D(this.gl.FRAMEBUFFER, this.gl.COLOR_ATTACHMENT0, this.gl.TEXTURE_2D, texture, 0)
+
+    
 
     // Check the frameBuffer status
     const status = this.gl.checkFramebufferStatus(this.gl.FRAMEBUFFER)
@@ -215,6 +237,11 @@ export class GPGPU {
     const buffer = new Float32Array(spanX * spanY * 4)
     this.gl.readPixels(startX, startY, spanX, spanY, this.gl.RGBA, this.gl.FLOAT, buffer)
     return buffer
+  }
+
+  getOutputTexture(): WebGLTexture {
+    const texture = this.gl.getFramebufferAttachmentParameter(this.gl.FRAMEBUFFER, this.gl.COLOR_ATTACHMENT0, this.gl.FRAMEBUFFER_ATTACHMENT_OBJECT_NAME)
+    return texture
   }
 
   delete() {

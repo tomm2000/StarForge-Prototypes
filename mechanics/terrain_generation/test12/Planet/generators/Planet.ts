@@ -37,12 +37,12 @@ export class Planet {
     this.setMesh(this.generateMesh())
     this.initUpdate()
     this.generateGUI()
+    this.dataController.update()
   }
 
   static async fromJson(scene: Scene, data: string): Promise<Planet> {
     const dataController = await DataController.fromJson(data, scene)
     const planet = new Planet(scene, dataController)
-    planet.update()
     return planet
   }
   static async fromFirebase(scene: Scene, filename: string): Promise<Planet> {
