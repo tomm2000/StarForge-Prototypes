@@ -2,6 +2,7 @@ import { Material, Mesh, NodeMaterial, Scene } from "babylonjs";
 import { setNMInputValue } from "../../lib/nodeMaterial";
 
 export class MaterialController {
+  // https://nme.babylonjs.com/#XRRVZX#49
   private properties: {
     src: { value: string, type: 'url' | 'id' | 'none' }
   }
@@ -15,19 +16,20 @@ export class MaterialController {
     this.properties = { src: { type: 'none', value: '' } }
   }
 
-  async setMaterialFromFile(url: string) {
+  async setMaterial(value: string, type: 'url' | 'id' | 'none'): Promise<Material> {
     this.randomizeID()
-    this.properties.src = { value: url, type: 'url' }
-    this.material = await NodeMaterial.ParseFromFileAsync('material', url, this.scene)
+    this.properties.src = { value, type }
+    return await this.initMaterial()
   }
-  async setMaterialFromSnippet(id: string) {
-    this.randomizeID()
-    this.properties.src = { value: id, type: 'id' }
-    this.material = await NodeMaterial.ParseFromSnippetAsync(id, this.scene)
-  }
-  setMaterial(src: string, type: 'url' | 'id' | 'none') {
-    if     (type == 'id' ) { this.setMaterialFromSnippet(src) }
-    else if(type == 'url') { this.setMaterialFromFile(src)    }
+  private async initMaterial(): Promise<Material> {
+    if     (this.properties.src.type == 'url' ) {
+      this.material = await NodeMaterial.ParseFromFileAsync('material', this.properties.src.value, this.scene)
+    }
+    else if(this.properties.src.type == 'id') {
+      this.material = await NodeMaterial.ParseFromSnippetAsync(this.properties.src.value, this.scene)
+    }
+    else { throw 'wrong material type' }
+    return this.material
   }
 
   private randomizeID() { this.id = Math.random() }
@@ -47,7 +49,7 @@ export class MaterialController {
     }
   }
 
-  static fromJson(data: string, scene: Scene): MaterialController {
+  static async fromJson(data: string, scene: Scene): Promise<MaterialController> {
     const json: any = JSON.parse(data)
 
     const material_controller = new MaterialController(scene)
@@ -55,7 +57,9 @@ export class MaterialController {
     material_controller.properties = json
 
     const { type, value } = material_controller.properties.src
-    material_controller.setMaterial(value, type)
+
+    const m = await material_controller.setMaterial(value, type)
+
 
     return material_controller
   }

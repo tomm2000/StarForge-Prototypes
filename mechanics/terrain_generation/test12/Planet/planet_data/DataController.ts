@@ -55,11 +55,11 @@ export class DataController {
     this.material_controller = material_controller
   }
 
-  static fromJson(data: string, scene: Scene): DataController {
+  static async fromJson(data: string, scene: Scene): Promise<DataController> {
     const json: any = JSON.parse(data)
 
     const noise_controller = NoiseController.fromJson(JSON.stringify(json.noise_controller))
-    const material_controller = MaterialController.fromJson(JSON.stringify(json.material_controller), scene)
+    const material_controller = await MaterialController.fromJson(JSON.stringify(json.material_controller), scene)
 
     const dataController = new DataController(noise_controller, material_controller)
 
@@ -76,7 +76,7 @@ export class DataController {
   //---- GETTERS & SETTERS ----
   setMinHeight(value: number) { this.properties.minHeight = value }
   setMaxHeight(value: number) { this.properties.maxHeight = value }
-  setMinMaxHeight(min: number, max: number) { this.properties.minHeight = min; this.properties.maxHeight = max }
+  setMinMaxHeight(min: number, max: number) { this.properties.minHeight = min; this.properties.maxHeight = max; }
   getMinHeight() { return this.properties.minHeight }
   getMaxHeight() { return this.properties.maxHeight }
 
@@ -88,6 +88,14 @@ export class DataController {
     this.noise_controller.dispose()
     this.material_controller.dispose()
     destroyGUIrecursive(this.gui)
+  }
+
+  update() {
+    this.material_controller.updateNodes([
+      { name: 'INminHeight', value: this.properties.minHeight  },
+      { name: 'INmaxHeight', value: this.properties.maxHeight  },
+      { name: 'INseaLevel' , value: this.properties.waterLevel },
+    ])
   }
   
   //---- JSON ----

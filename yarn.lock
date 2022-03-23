@@ -3001,6 +3001,11 @@ camel-case@^4.1.1:
     pascal-case "^3.1.2"
     tslib "^2.0.3"
 
+camelcase@6.0.0:
+  version "6.0.0"
+  resolved "https://registry.yarnpkg.com/camelcase/-/camelcase-6.0.0.tgz#5259f7c30e35e278f1bdc2a4d91230b37cad981e"
+  integrity sha512-8KMDF1Vz2gzOq54ONPJS65IvTUaB1cHJ2DMM7MbPmLZljDH1qpzzLsWdiN9pHh6qvkRVDTi/07+eNGch/oLU4w==
+
 camelcase@^5.0.0:
   version "5.3.1"
   resolved "https://registry.yarnpkg.com/camelcase/-/camelcase-5.3.1.tgz#e3c9b31569e106811df242f715725a1f4c494320"
@@ -4474,6 +4479,13 @@ gensync@^1.0.0-beta.2:
   version "1.0.0-beta.2"
   resolved "https://registry.yarnpkg.com/gensync/-/gensync-1.0.0-beta.2.tgz#32a6ee76c3d7f52d46b2b1ae5d93fea8580a25e0"
   integrity sha512-3hN7NaskYvMDLQY55gnW3NQ+mesEAepTqlg+VEbj7zzqEMBVNhzcGYYeqFo/TlYz6eQiFcp1HcsCZO+nGgS8zg==
+
+geotic@^4.3.2:
+  version "4.3.2"
+  resolved "https://registry.yarnpkg.com/geotic/-/geotic-4.3.2.tgz#ec3a0a43c1ab76e966fe1d2543e8c7fd1e9d03d6"
+  integrity sha512-kZrQXqY9ulqs15i/0qRbjJ/szPJEQ/AdNAdHqgMAKlxuEBG4FHpxTZW04BGNO9dfx0fry9YzTcdyJADHjhIKmA==
+  dependencies:
+    camelcase "6.0.0"
 
 get-caller-file@^2.0.5:
   version "2.0.5"

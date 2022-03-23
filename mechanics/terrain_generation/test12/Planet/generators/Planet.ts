@@ -9,10 +9,10 @@ import { DataController } from "../planet_data/DataController";
 export class Planet {
   //---- data
   private dataController: DataController 
-  private _schematicFile: string = ''
-  get schematicFile() { return this._schematicFile }
-  set schematicFile(value: string) {
-    this._schematicFile = value;
+  private _schemFile: string = ''
+  get schemFile() { return this._schemFile }
+  set schemFile(value: string) {
+    this._schemFile = value;
     loadSchematic(value).then(data => this.regen(data))
   }
 
@@ -34,29 +34,37 @@ export class Planet {
     this.scene = scene;
     this.dataController = planetData
 
+    this.setMesh(this.generateMesh())
     this.initUpdate()
     this.generateGUI()
-    this.setMesh(this.generateMesh())
   }
 
-  static fromJson(scene: Scene, data: string): Planet {
-    return new Planet(scene, DataController.fromJson(data, scene))
+  static async fromJson(scene: Scene, data: string): Promise<Planet> {
+    const dataController = await DataController.fromJson(data, scene)
+    const planet = new Planet(scene, dataController)
+    planet.update()
+    return planet
+  }
+  static async fromFirebase(scene: Scene, filename: string): Promise<Planet> {
+    const data = await loadSchematic(filename)
+    return this.fromJson(scene, data)
   }
 
   static makeEmpty(scene: Scene) {
     return new Planet(scene, DataController.makeEmpty(scene))
   }
 
-  regen(data?: string) {
+  async regen(data?: string) {
     this.dataController.dispose()
     destroyGUIrecursive(this.mainGUI)
 
-    const planetData = data ? DataController.fromJson(data, this.scene) : DataController.makeEmpty(this.scene)
+    const dataController = data ? await DataController.fromJson(data, this.scene) : DataController.makeEmpty(this.scene)
 
-    this.dataController = planetData
+    this.dataController = dataController
 
     this.setMesh(this.generateMesh())
     this.generateGUI()
+    this.update()
   }
 
   dispose() {
@@ -79,13 +87,15 @@ export class Planet {
     delete this.updateInterval
   }
 
-  update() { this.mesh?.updateMesh(); }
+  update() {
+    this.dataController.update()
+    this.mesh?.updateMesh();
+  }
   //------------------
 
   //---- mesh ----
   generateMesh(): IcoSphereMesh {
     const mesh = new IcoSphereMesh(this.scene, undefined, this.dataController)
-    mesh.generateNewMesh()
 
     return mesh
   }
@@ -109,7 +119,7 @@ export class Planet {
     // folder.add(this, 'uploadJson')
     folder.add(this, 'resetPlanet')
 
-    this.schematicGUI = folder.add(this, 'schematicFile', [])
+    this.schematicGUI = folder.add(this, 'schemFile', [])
 
     folder.open()
 

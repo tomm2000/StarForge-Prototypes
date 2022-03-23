@@ -118,6 +118,7 @@ yarn deploy
   - reworked ui (again) to work with the new noise system
   - re-added support for loading and downloading schematics (now with firebase)
   - re-added support for masks
+  - new look for the page
 </details>
 
 

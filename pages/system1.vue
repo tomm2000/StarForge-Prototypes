@@ -16,10 +16,7 @@ export default Vue.extend({
 })
 </script>
 
-<style>
-html { margin: 0; height: 100vh; width: 100vw; }
-
-body { margin: 0; padding: 0; }
+<style lang="scss" scoped>
 
 #main_container {
   background-color: #3A3A98;
