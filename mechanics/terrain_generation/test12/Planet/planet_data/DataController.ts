@@ -12,7 +12,7 @@ type propertiesType = {
   type: PlanetTypes
   radius: number
   seed: number
-  waterLevel: number
+  seaLevel: number
   minHeight: number
   maxHeight: number
 }
@@ -23,7 +23,7 @@ export class DataController {
     type: 'terrestrial1',
     radius: 1,
     seed: Math.floor(Math.random() * 9999),
-    waterLevel: 0,
+    seaLevel: 0,
     minHeight: 0,
     maxHeight: 0,
   }
@@ -42,7 +42,7 @@ export class DataController {
     // this.gui.add(this.properties, 'radius', 0.1, 2, 0.01)
     // this.gui.add(this.properties, 'seed', 0, 9999)
     //TODO: global seed for noise layers
-    this.gui.add(this.properties, 'waterLevel', 0, 2, 0.01)
+    this.gui.add(this.properties, 'seaLevel', 0, 1, 0.01)
 
     this.gui.open()
 
@@ -94,7 +94,7 @@ export class DataController {
     this.material_controller.updateNodes([
       { name: 'INminHeight', value: this.properties.minHeight  },
       { name: 'INmaxHeight', value: this.properties.maxHeight  },
-      { name: 'INseaLevel' , value: this.properties.waterLevel },
+      { name: 'INseaLevel' , value: this.properties.seaLevel },
     ])
   }
   
