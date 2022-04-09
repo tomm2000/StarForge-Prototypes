@@ -29,7 +29,7 @@ export class Universe {
     Planet.fromFirebase(this.scene, 'terr_1.json').then(planet => this.planets[0] = planet)
   }
 
-  setPlanetFromJson(data: string) {
+  setPlanetFromJson(data: object) {
     this.planets[0].dispose()
 
     Planet.fromJson(this.scene, data)

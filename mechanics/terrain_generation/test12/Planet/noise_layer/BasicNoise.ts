@@ -1,20 +1,23 @@
-import { GUI } from "dat.gui";
+import { GUI, GUIController } from "dat.gui";
 import { getDefaultPositionShaderVertex, positionShader } from "../misc/positionShader";
 import { noise3D } from "../../lib/GlslNoise";
 import { GPGPUuniform } from "../../lib/GPGPU";
-import { NoiseLayer, NoiseLayerData } from "./NoiseLayer";
+import { NoiseLayer } from "./NoiseLayer";
 import { GPUSpecs, NoiseController, NoiseTypes } from "../planet_data/NoiseController";
 import { texture_unifomrs } from "../../lib/GlslSnippets";
 
 export class BasicNoise extends NoiseLayer {
-  protected amplitude: number = 1
-  protected frequency: number = 1
-  protected octaves: number = 1
-  protected persistance: number = 0.5
-  protected lacunarity: number = 2
-  protected exponent: number = 1
-  private mantain_sign: boolean = false
-  protected seed: number = Math.floor(Math.random() * 9999)
+  protected properties = {
+    ...super.properties,
+    amplitude: 1,
+    frequency: 1,
+    octaves: 1,
+    persistance: 0.5,
+    lacunarity: 2,
+    exponent: 1,
+    mantain_sign: false,
+    seed: Math.floor(Math.random() * 9999)
+  }
 
   constructor(gpuSpecs: GPUSpecs | undefined = undefined, controller: NoiseController, index: number) {
     super(gpuSpecs, controller, index)
@@ -29,34 +32,34 @@ export class BasicNoise extends NoiseLayer {
   protected getUniforms(): GPGPUuniform[] {
     return [
       ...super.getUniforms(),
-      {type: 'uniform1f', name: 'amplitude', value: this.amplitude},
-      {type: 'uniform1f', name: 'frequency', value: this.frequency},
-      {type: 'uniform1i', name: 'octaves', value: this.octaves},
-      {type: 'uniform1f', name: 'persistance', value: this.persistance},
-      {type: 'uniform1f', name: 'lacunarity', value: this.lacunarity},
-      {type: 'uniform1i', name: 'exponent', value: this.exponent},
-      {type: 'uniform1i', name: 'mantain_sign', value: this.mantain_sign ? 1 : 0},
-      {type: 'uniform1i', name: 'seed', value: this.seed},
+      {type: 'uniform1f', name: 'amplitude', value: this.properties.amplitude},
+      {type: 'uniform1f', name: 'frequency', value: this.properties.frequency},
+      {type: 'uniform1i', name: 'octaves', value: this.properties.octaves},
+      {type: 'uniform1f', name: 'persistance', value: this.properties.persistance},
+      {type: 'uniform1f', name: 'lacunarity', value: this.properties.lacunarity},
+      {type: 'uniform1i', name: 'exponent', value: this.properties.exponent},
+      {type: 'uniform1i', name: 'mantain_sign', value: this.properties.mantain_sign ? 1 : 0},
+      {type: 'uniform1i', name: 'seed', value: this.properties.seed},
     ]
   }
 
   generateGui(gui: GUI): GUI {
     gui = super.generateGui(gui)
 
-    gui.add(this, 'seed', 0, 9999, 1)
-    gui.add(this, 'amplitude', -1, 1, 0.01)
-    gui.add(this, 'frequency', 0.1, 5, 0.01)
-    gui.add(this, 'octaves', 1, 10, 1)
-    gui.add(this, 'persistance', 0.1, 1, 0.001)
-    gui.add(this, 'lacunarity', 0.1, 3, 0.1)
-    gui.add(this, 'exponent', 1, 6, 1)
-    gui.add(this, 'mantain_sign')
+    this.observeGUI(gui.add(this.properties, 'seed', 0, 9999, 1))
+    this.observeGUI(gui.add(this.properties, 'amplitude', -1, 1, 0.01))
+    this.observeGUI(gui.add(this.properties, 'frequency', 0.1, 5, 0.01))
+    this.observeGUI(gui.add(this.properties, 'octaves', 1, 10, 1))
+    this.observeGUI(gui.add(this.properties, 'persistance', 0.1, 1, 0.001))
+    this.observeGUI(gui.add(this.properties, 'lacunarity', 0.1, 3, 0.1))
+    this.observeGUI(gui.add(this.properties, 'exponent', 1, 6, 1))
+    this.observeGUI(gui.add(this.properties, 'mantain_sign'))
 
     return gui
   }
 
-  getJson(): NoiseLayerData {
-    const { seed, amplitude, frequency, octaves, persistance, lacunarity, exponent, mantain_sign } = this
+  getJson(): object {
+    const { seed, amplitude, frequency, octaves, persistance, lacunarity, exponent, mantain_sign } = this.properties
     
     return {
       ...super.getJson(),

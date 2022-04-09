@@ -13,7 +13,7 @@ export class Planet {
   get schemFile() { return this._schemFile }
   set schemFile(value: string) {
     this._schemFile = value;
-    loadSchematic(value).then(data => this.regen(data))
+    loadSchematic(value).then(data => this.regen(JSON.parse(data)))
   }
 
   //---- 3D
@@ -39,7 +39,7 @@ export class Planet {
     this.generateGUI()
   }
 
-  static async fromJson(scene: Scene, data: string): Promise<Planet> {
+  static async fromJson(scene: Scene, data: object): Promise<Planet> {
     const dataController = await DataController.fromJson(data, scene)
     const planet = new Planet(scene, dataController)
     planet.update()
@@ -47,14 +47,14 @@ export class Planet {
   }
   static async fromFirebase(scene: Scene, filename: string): Promise<Planet> {
     const data = await loadSchematic(filename)
-    return this.fromJson(scene, data)
+    return this.fromJson(scene, JSON.parse(data))
   }
 
   static makeEmpty(scene: Scene) {
     return new Planet(scene, DataController.makeEmpty(scene))
   }
 
-  async regen(data?: string) {
+  async regen(data?: object) {
     this.dataController.dispose()
     destroyGUIrecursive(this.mainGUI)
 
@@ -121,7 +121,7 @@ export class Planet {
 
     this.schematicGUI = folder.add(this, 'schemFile', [])
 
-    folder.open()
+    // folder.open()
 
     this.dataGUI = this.dataController.generateGui(this.mainGUI)
     
@@ -134,7 +134,7 @@ export class Planet {
   }
 
   downloadJson() {
-    download('planet_data.json', this.dataController.getJson())
+    download('planet_data.json', JSON.stringify(this.dataController.getJson()))
   }
   uploadJson() { }
   resetPlanet() { this.regen() }

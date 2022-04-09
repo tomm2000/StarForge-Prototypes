@@ -2,7 +2,7 @@ import { GUI, GUIController } from "dat.gui";
 import { destroyGUIrecursive } from "../../lib/GUI";
 import { BasicNoise } from "../noise_layer/BasicNoise";
 import { MaskNoise } from "../noise_layer/MaskNoise";
-import { NoiseLayer, NoiseLayerData } from "../noise_layer/NoiseLayer";
+import { NoiseLayer } from "../noise_layer/NoiseLayer";
 import { OceanModifier } from "../noise_layer/OceanModifier";
 import { PositiveNoise } from "../noise_layer/PositiveNoise";
 import { RidgeNoise } from "../noise_layer/RidgeNoise";
@@ -22,6 +22,7 @@ export class NoiseController {
   private elevationDataCache: Float32Array[] = []
   private baseElevationDataCache: Float32Array | undefined
   private positionDataCache: Float32Array | undefined
+  changedLayer: number = 0
 
   private gpuSpecs: GPUSpecs | undefined
 
@@ -142,10 +143,11 @@ export class NoiseController {
   /** generates the gui */
   generateGUI(gui: GUI = new GUI()) {
     this.mainGUI = gui
+    let folder = gui.addFolder(`noise controller`)
 
-    gui.add(this, 'addLayer')
-    gui.add(this, 'removeLayer')
-    this.indexGUI = gui.add(this, 'currentLayer', 0, Math.max(0, this.noiseLayers.length), 1)
+    folder.add(this, 'addLayer')
+    folder.add(this, 'removeLayer')
+    this.indexGUI = folder.add(this, 'currentLayer', 0, Math.max(0, this.noiseLayers.length), 1)
 
     this.layerGUI = gui.addFolder('noise layer')
   }
@@ -177,7 +179,7 @@ export class NoiseController {
       throw 'elevation and position data are not initialized nor passed!'
     }
     
-    for(let i = 0; i < this.noiseLayers.length; i++) {
+    for(let i = this.changedLayer; i < this.noiseLayers.length; i++) {
       const layer = this.noiseLayers[i]
 
       let mask_data: Float32Array | undefined = undefined
@@ -193,6 +195,8 @@ export class NoiseController {
         this.positionDataCache,
         mask_data
       )
+
+      this.changedLayer = this.noiseLayers.length-1
     }
   }
 
@@ -220,21 +224,19 @@ export class NoiseController {
   }
 
   /** returns an object representing the controller's data */
-  getJson(): NoiseControllerData {
+  getJson(): object {
     return {
       layer_amount: this.noiseLayers.length,
       layers: this.noiseLayers.map(layer => layer.getJson())
     }
   }
 
-  static fromJson(data: string): NoiseController {
-    // console.log(data)
-    const json: NoiseControllerData = JSON.parse(data)
+  static fromJson(data: object): NoiseController {
   
-    const controller = new NoiseController()
+    const controller = new NoiseController();
   
-    json.layers.forEach((layer, index) => {
-      const new_layer = NoiseLayer.fromJson(layer, noiseEnum[layer.noiseType], controller, index)
+    (data as any).layers.forEach((layer: any, index: any) => {
+      const new_layer = NoiseLayer.fromJson(layer, (noiseEnum as any)[layer.noiseType], controller, index)
       controller.addLayer(new_layer)
     })
   
@@ -258,9 +260,4 @@ export const noiseEnum: noiseEnumType = {
   'ocean_modifier': OceanModifier,
   'positive': PositiveNoise,
   'ridge': RidgeNoise
-}
-
-export type NoiseControllerData = {
-  layer_amount: number,
-  layers: NoiseLayerData[]
 }

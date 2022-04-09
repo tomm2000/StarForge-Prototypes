@@ -42,7 +42,7 @@ export default Vue.extend({
       fr.onload = () => {
         if(typeof fr.result != 'string') { return }
 
-        this.universe?.setPlanetFromJson(fr.result)
+        this.universe?.setPlanetFromJson(JSON.parse(fr.result))
       }
     },},
   destroyed() {

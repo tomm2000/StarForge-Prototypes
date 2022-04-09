@@ -44,7 +44,8 @@ export class DataController {
     //TODO: global seed for noise layers
     this.gui.add(this.properties, 'seaLevel', 0, 1, 0.01)
 
-    this.gui.open()
+    // this.gui.open()
+    this.material_controller.generateGUI(gui)
 
     return this.gui
   }
@@ -55,11 +56,11 @@ export class DataController {
     this.material_controller = material_controller
   }
 
-  static async fromJson(data: string, scene: Scene): Promise<DataController> {
-    const json: any = JSON.parse(data)
+  static async fromJson(data: object, scene: Scene): Promise<DataController> {
+    const json: any = data
 
-    const noise_controller = NoiseController.fromJson(JSON.stringify(json.noise_controller))
-    const material_controller = await MaterialController.fromJson(JSON.stringify(json.material_controller), scene)
+    const noise_controller = NoiseController.fromJson(json.noise_controller)
+    const material_controller = await MaterialController.fromJson(json.material_controller, scene)
 
     const dataController = new DataController(noise_controller, material_controller)
 
@@ -90,6 +91,9 @@ export class DataController {
     destroyGUIrecursive(this.gui)
   }
 
+  /** updates the controller, what gets updated: \
+   * • the material controller nodes
+   */
   update() {
     this.material_controller.updateNodes([
       { name: 'INminHeight', value: this.properties.minHeight  },
@@ -99,12 +103,12 @@ export class DataController {
   }
   
   //---- JSON ----
-  getJson(): string {
+  getJson(): object {
     const data: any = { properties: this.properties }
 
     data.noise_controller = this.noise_controller.getJson()
     data.material_controller = this.material_controller.getJson()
 
-    return JSON.stringify(data)
+    return data
   }
 }
