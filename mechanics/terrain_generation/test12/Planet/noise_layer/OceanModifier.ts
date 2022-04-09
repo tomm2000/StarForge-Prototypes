@@ -8,7 +8,7 @@ import { GPUSpecs, NoiseController } from "../planet_data/NoiseController";
 import { texture_unifomrs } from "../../lib/GlslSnippets";
 
 export class OceanModifier extends NoiseLayer {
-  protected properties = {
+  protected _properties = {
     ...super.properties,
     oceanFloor: 0,
     oceanDepth: 1,
@@ -38,6 +38,8 @@ export class OceanModifier extends NoiseLayer {
 
   generateGui(gui: GUI): GUI {
     gui = super.generateGui(gui)
+
+    console.log(super.properties)
 
     this.observeGUI(gui.add(this.properties, 'oceanFloor', -2, 2, 0.01))
     this.observeGUI(gui.add(this.properties, 'oceanDepth', 0.1, 5, 0.01))

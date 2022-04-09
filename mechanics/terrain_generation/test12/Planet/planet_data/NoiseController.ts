@@ -42,26 +42,44 @@ export class NoiseController {
   private indexGUI: GUIController | undefined
   private layerGUI: GUI | undefined
 
-  private constructor() {
-    this.generateGUI()
+///================ CONSTRUCTORS & JSON ======================
+  private constructor() { this.generateGUI() }
+  dispose() {
+    this.noiseLayers.forEach(layer => { layer.dispose() })
+    destroyGUIrecursive(this.mainGUI)
   }
 
-  /** initializes the layers with the current specs or the given ones */
-  initializeLayers(gpuSpecs: GPUSpecs | undefined = this.gpuSpecs) {
-    if(!gpuSpecs) { throw 'bad gpu specs' }
+  /** returns an object representing the controller's data */
+  getJson(): object {
+    return {
+      layer_amount: this.noiseLayers.length,
+      layers: this.noiseLayers.map(layer => layer.getJson())
+    }
+  }
 
-    this.noiseLayers.forEach(layer => {
-      if(!layer.isInitialized()) {
-        layer.initGPU(gpuSpecs)
-      }
+  static fromJson(data: object): NoiseController {
+  
+    const controller = new NoiseController();
+  
+    (data as any).layers.forEach((layer: any, index: any) => {
+      const new_layer = NoiseLayer.fromJson(layer, (noiseEnum as any)[layer.noiseType], controller, index)
+      controller.addLayer(new_layer)
     })
+  
+    return controller
   }
 
+  static makeEmpty(): NoiseController {
+    return new NoiseController()
+  }
+///===========================================================
+
+///======================== GUI ==============================
   /**
    * adds a layer to the list
    * @param layer the layer to add, defaults to a new default layer
    */
-  addLayer(layer: NoiseLayer | undefined) {
+  private addLayer(layer: NoiseLayer | undefined) {
     const new_layer = layer || new NoiseLayer(this.gpuSpecs, this, this.noiseLayers.length)
     this.noiseLayers.push(new_layer)
 
@@ -112,7 +130,7 @@ export class NoiseController {
   }
 
   /** updates the indexes for all the layers */
-  updateIndexes() {
+  private updateIndexes() {
     this.noiseLayers.forEach((layer, index) => layer.setIndex(index))
   }
 
@@ -151,15 +169,28 @@ export class NoiseController {
 
     this.layerGUI = gui.addFolder('noise layer')
   }
+  
+  /** removes the gui */
+  destroyGUI() { destroyGUIrecursive(this.mainGUI) }
+///===========================================================
+
+///====================== GENERATION =========================
+  /** initializes the layers with the current specs or the given ones */
+  private initializeLayers(gpuSpecs: GPUSpecs | undefined = this.gpuSpecs) {
+    if(!gpuSpecs) { throw 'bad gpu specs' }
+
+    this.noiseLayers.forEach(layer => {
+      if(!layer.isInitialized()) {
+        layer.initGPU(gpuSpecs)
+      }
+    })
+  }
 
   /** sets the gpu specs that will be used by the layers */
   setGPUSpecs(specs: GPUSpecs) {
     this.gpuSpecs = specs
     this.initializeLayers(this.gpuSpecs)
   }
-
-  /** removes the gui */
-  destroyGUI() { destroyGUIrecursive(this.mainGUI) }
 
   //TODO: only layers after the one that got changed need to be recalculated!
   /**
@@ -217,35 +248,7 @@ export class NoiseController {
       return this.elevationDataCache[index]
     }
   }
-
-  dispose() {
-    this.noiseLayers.forEach(layer => { layer.dispose() })
-    destroyGUIrecursive(this.mainGUI)
-  }
-
-  /** returns an object representing the controller's data */
-  getJson(): object {
-    return {
-      layer_amount: this.noiseLayers.length,
-      layers: this.noiseLayers.map(layer => layer.getJson())
-    }
-  }
-
-  static fromJson(data: object): NoiseController {
-  
-    const controller = new NoiseController();
-  
-    (data as any).layers.forEach((layer: any, index: any) => {
-      const new_layer = NoiseLayer.fromJson(layer, (noiseEnum as any)[layer.noiseType], controller, index)
-      controller.addLayer(new_layer)
-    })
-  
-    return controller
-  }
-
-  static makeEmpty(): NoiseController {
-    return new NoiseController()
-  }
+///===========================================================
 }
 
 type noiseEnumType = {

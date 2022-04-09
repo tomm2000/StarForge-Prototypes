@@ -7,7 +7,7 @@ import { GPUSpecs, NoiseController, NoiseTypes } from "../planet_data/NoiseContr
 import { texture_unifomrs } from "../../lib/GlslSnippets";
 
 export class BasicNoise extends NoiseLayer {
-  protected properties = {
+  protected _properties = {
     ...super.properties,
     amplitude: 1,
     frequency: 1,
@@ -32,14 +32,14 @@ export class BasicNoise extends NoiseLayer {
   protected getUniforms(): GPGPUuniform[] {
     return [
       ...super.getUniforms(),
-      {type: 'uniform1f', name: 'amplitude', value: this.properties.amplitude},
-      {type: 'uniform1f', name: 'frequency', value: this.properties.frequency},
-      {type: 'uniform1i', name: 'octaves', value: this.properties.octaves},
-      {type: 'uniform1f', name: 'persistance', value: this.properties.persistance},
-      {type: 'uniform1f', name: 'lacunarity', value: this.properties.lacunarity},
-      {type: 'uniform1i', name: 'exponent', value: this.properties.exponent},
-      {type: 'uniform1i', name: 'mantain_sign', value: this.properties.mantain_sign ? 1 : 0},
-      {type: 'uniform1i', name: 'seed', value: this.properties.seed},
+      {type: 'uniform1f', name: 'amplitude'   , value: this.properties.amplitude            },
+      {type: 'uniform1f', name: 'frequency'   , value: this.properties.frequency            },
+      {type: 'uniform1i', name: 'octaves'     , value: this.properties.octaves              },
+      {type: 'uniform1f', name: 'persistance' , value: this.properties.persistance          },
+      {type: 'uniform1f', name: 'lacunarity'  , value: this.properties.lacunarity           },
+      {type: 'uniform1i', name: 'exponent'    , value: this.properties.exponent             },
+      {type: 'uniform1i', name: 'mantain_sign', value: this.properties.mantain_sign ? 1 : 0 },
+      {type: 'uniform1i', name: 'seed'        , value: this.properties.seed                 },
     ]
   }
 

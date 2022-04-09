@@ -8,7 +8,7 @@ import { GUI } from "dat.gui";
 import { NoiseLayer } from "./NoiseLayer";
 
 export class MaskNoise extends BasicNoise {
-  protected properties = {
+  protected _properties = {
     ...super.properties,
     verticalShift: 0,
     floor: 0,

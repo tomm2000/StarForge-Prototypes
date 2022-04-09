@@ -18,20 +18,26 @@ export class NoiseLayer {
   protected gui: GUI | undefined
   protected gpuSpecs: GPUSpecs | undefined
 
-  protected properties = {
+  protected _properties = {
     maskIndex: -1,
     maskOnly: false
   }
+  protected set properties(value: any) { this._properties = value }
+  protected get properties() { return this._properties }
 
   protected _noiseType: NoiseTypes = 'default'
-  set noiseType(type: NoiseTypes) {
+  protected set noiseType(type: NoiseTypes) {
     this._noiseType = type
     this.controller.changeNoiseType(type)
   }
-  get noiseType() {
-    return this._noiseType
-  } 
+  protected get noiseType() { return this._noiseType } 
+  
+  setIndex(index: number) { this.layer_index = index }
+  getMaskIndex() { return this.properties.maskIndex }
+  protected getPositionShader() { return getDefaultPositionShader() }
+  isInitialized() { return this.initialized }
 
+///================ CONSTRUCTORS & JSON ======================
   constructor(gpuSpecs: GPUSpecs | undefined = undefined, controller: NoiseController, index: number) {
     this.positionShader = this.getPositionShader()
     this.controller = controller
@@ -40,9 +46,55 @@ export class NoiseLayer {
     if(gpuSpecs) { this.initGPU(gpuSpecs) }
   }
 
-  setIndex(index: number) { this.layer_index = index }
-  getMaskIndex() { return this.properties.maskIndex }
+  /**
+   * disposes of the resouces used by the layer
+   * @param destroy_gui wether to delete the gui or not
+   */
+  dispose(destroy_gui: boolean = true) {
+  this.gpu?.delete()
+  if(destroy_gui) {
+    destroyGUIrecursive(this.gui) 
+  }
+  }
 
+  /** @returns a json representation of the layer */
+  getJson(): object {
+    const { noiseType } = this
+    const { maskIndex, maskOnly } = this.properties
+    return { noiseType, maskIndex, maskOnly }
+  }
+
+  /** creates a new layer with the given data */
+  static fromJson(data: object, layer_class: typeof NoiseLayer, controller: NoiseController, index: number): NoiseLayer {
+    const layer = new layer_class(undefined, controller, index)
+
+    const json: any = data
+
+    for(let k in json) {
+      (layer.properties as any)[k] = json[k]
+    }
+    return layer
+  }
+///===========================================================
+
+///======================== GUI ==============================
+  /** creates the gui for the layer */
+  generateGui(gui: GUI): GUI {
+    gui.add(this, 'noiseType', NoiseTypeList)
+    this.observeGUI(gui.add(this.properties, 'maskIndex', -1, this.layer_index - 1, 1))
+    this.observeGUI(gui.add(this.properties, 'maskOnly'))
+
+
+    this.gui = gui
+    return gui
+  }
+
+  protected observeGUI(gui: GUIController) {
+    gui.onChange((value) => { this.controller.changedLayer = Math.min(this.controller.changedLayer, this.layer_index) })
+  }
+///===========================================================
+
+///====================== GENERATION =========================
   /** sets the gpu specs for the noise layers, they will be initialized accordingly */
   initGPU({gl, height, width}: GPUSpecs) {
     if(this.gpu) { this.gpu.delete() }
@@ -58,8 +110,6 @@ export class NoiseLayer {
     this.initialized = true
     this.gpuSpecs = {gl, height, width}
   }
-
-  isInitialized() { return this.initialized }
 
   /**
    * Updates the texture buffers
@@ -82,8 +132,6 @@ export class NoiseLayer {
       this.texture_built = true
     }
   }
-
-  protected getPositionShader() { return getDefaultPositionShader() }
 
   /**
    * Applies the noise to the elevation_data with the given position_data
@@ -112,55 +160,5 @@ export class NoiseLayer {
       {type: 'uniform1i', name: 'mask_only', value: this.properties.maskOnly ? 1 : 0}
     ]
   }
-
-  /** creates the gui for the layer */
-  generateGui(gui: GUI): GUI {
-    // gui.open()
-
-    gui.add(this, 'noiseType', NoiseTypeList)
-    this.observeGUI(gui.add(this.properties, 'maskIndex', -1, this.layer_index - 1, 1))
-    this.observeGUI(gui.add(this.properties, 'maskOnly'))
-
-    this.gui = gui
-    return gui
-  }
-
-  getGui() { return this.gui }
-
-  protected observeGUI(gui: GUIController) {
-    gui.onChange((value) => {
-      this.controller.changedLayer = Math.min(this.controller.changedLayer, this.layer_index)
-      // console.log(this.controller.lastValidElevation)
-    })
-  }
-
-  /**
-   * disposes of the resouces used by the layer
-   * @param destroy_gui wether to delete the gui or not
-   */
-  dispose(destroy_gui: boolean = true) {
-    this.gpu?.delete()
-    if(destroy_gui) {
-      destroyGUIrecursive(this.gui) 
-    }
-  }
-
-  /** @returns a json representation of the layer */
-  getJson(): object {
-    const { noiseType } = this
-    const { maskIndex, maskOnly } = this.properties
-    return { noiseType, maskIndex, maskOnly }
-  }
-
-  /** creates a new layer with the given data */
-  static fromJson(data: object, layer_class: typeof NoiseLayer, controller: NoiseController, index: number): NoiseLayer {
-    const layer = new layer_class(undefined, controller, index)
-
-    const json: any = data
-
-    for(let k in json) {
-      (layer.properties as any)[k] = json[k]
-    }
-    return layer
-  }
+///===========================================================
 }

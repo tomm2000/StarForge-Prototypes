@@ -55,7 +55,7 @@ export class MaterialController {
     return folder
   }
   /**
-   * USED FOR THE GUI
+   * **USED FOR THE GUI** \
    * uses the material src stored in the properties to update the material
   */
   private loadMaterial() { this.setMaterial(this.properties.src.value, this.properties.src.type) }
@@ -97,9 +97,7 @@ export class MaterialController {
 
   /** updates the material nodes using the given parameters */
   updateNodes(nodes: {name: string, value: any}[]) {
-    for(let node of nodes) {
-      setNMInputValue(this.material, node.name, node.value)
-    }
+    for(let node of nodes) { setNMInputValue(this.material, node.name, node.value) }
   }
 
   static async fromJson(data: object, scene: Scene): Promise<MaterialController> {
