@@ -10,10 +10,11 @@ import { NoiseLayer } from "./NoiseLayer";
 export class MaskNoise extends BasicNoise {
   protected _properties = {
     ...super.properties,
-    verticalShift: 0,
+    vertical_shift: 0,
     floor: 0,
     ceiling: 1
   }
+  protected get properties() { return this._properties }
 
   constructor(gpuSpecs: GPUSpecs | undefined = undefined, controller: NoiseController, index: number) {
     super(gpuSpecs, controller, index)
@@ -28,7 +29,7 @@ export class MaskNoise extends BasicNoise {
   protected getUniforms(): GPGPUuniform[] {
     return [
       ...super.getUniforms(),
-      {type: 'uniform1f', name: 'vertical_shift', value: this.properties.verticalShift},
+      {type: 'uniform1f', name: 'vertical_shift', value: this.properties.vertical_shift},
       {type: 'uniform1f', name: 'ffloor', value: this.properties.floor},
       {type: 'uniform1f', name: 'ceiling', value: this.properties.ceiling},
     ]
@@ -37,20 +38,11 @@ export class MaskNoise extends BasicNoise {
   generateGui(gui: GUI): GUI {
     gui = super.generateGui(gui)
 
-    this.observeGUI(gui.add(this.properties, 'verticalShift', -2, 2, 0.01))
+    this.observeGUI(gui.add(this.properties, 'vertical_shift', -2, 2, 0.01))
     this.observeGUI(gui.add(this.properties, 'floor', -2, 2, 0.1))
     this.observeGUI(gui.add(this.properties, 'ceiling', -2, 2, 0.1))
 
     return gui
-  }
-
-  getJson(): object {
-    const { verticalShift, floor, ceiling } = this.properties
-
-    return {
-      ...super.getJson(),
-      verticalShift, floor, ceiling
-    }
   }
 }
 

@@ -43,7 +43,8 @@ export class NoiseController {
   private layerGUI: GUI | undefined
 
 ///================ CONSTRUCTORS & JSON ======================
-  private constructor() { this.generateGUI() }
+  private constructor() {}
+  
   dispose() {
     this.noiseLayers.forEach(layer => { layer.dispose() })
     destroyGUIrecursive(this.mainGUI)
@@ -62,7 +63,7 @@ export class NoiseController {
     const controller = new NoiseController();
   
     (data as any).layers.forEach((layer: any, index: any) => {
-      const new_layer = NoiseLayer.fromJson(layer, (noiseEnum as any)[layer.noiseType], controller, index)
+      const new_layer = NoiseLayer.fromJson(layer, (noiseEnum as any)[layer.noise_type], controller, index)
       controller.addLayer(new_layer)
     })
   
@@ -159,15 +160,15 @@ export class NoiseController {
   }
 
   /** generates the gui */
-  generateGUI(gui: GUI = new GUI()) {
-    this.mainGUI = gui
-    let folder = gui.addFolder(`noise controller`)
+  generateGUI() {
+    this.mainGUI = new GUI()
+    let folder = this.mainGUI.addFolder(`noise controller`)
 
     folder.add(this, 'addLayer')
     folder.add(this, 'removeLayer')
     this.indexGUI = folder.add(this, 'currentLayer', 0, Math.max(0, this.noiseLayers.length), 1)
 
-    this.layerGUI = gui.addFolder('noise layer')
+    this.layerGUI = this.mainGUI.addFolder('noise layer')
   }
   
   /** removes the gui */

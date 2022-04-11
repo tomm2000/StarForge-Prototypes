@@ -45,10 +45,7 @@ export class MaterialController {
     folder.add(this.properties.src, 'value', '')
     folder.add(this.properties.src, 'type', ['url', 'id'])
     folder.add(this, 'loadMaterial')
-    
     fetchMaterials().then((list) => { folder.add(this, 'materialName', list) })
-
-    // folder.open()
 
     this.gui = folder
 

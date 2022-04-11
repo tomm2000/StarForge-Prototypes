@@ -2,6 +2,7 @@ import { Mesh, Scene, MeshBuilder, Material, } from "babylonjs"
 import { GPUSpecs, NoiseController } from "../Planet/planet_data/NoiseController"
 import { NoiseLayer } from '../Planet/noise_layer/NoiseLayer'
 import { DataController } from "../Planet/planet_data/DataController"
+import { Planet } from "../Planet/generators/Planet"
 
 export class IcoSphereMesh {
   private scene: Scene
@@ -16,10 +17,10 @@ export class IcoSphereMesh {
 
   //---- data
   private resolution: number = 10
-  private data_controller: DataController
+  private parent: Planet
 
-  constructor(scene: Scene, resolution: number = 64, data_controller: DataController) {
-    this.data_controller = data_controller
+  constructor(scene: Scene, resolution: number = 64, parent: Planet) {
+    this.parent = parent
     this.resolution = resolution
     this.scene = scene
     this.mesh = this.generateNewMesh()
@@ -42,7 +43,7 @@ export class IcoSphereMesh {
 
     this.mesh.updateMeshPositions((data) => {
 
-      const noise_controller = this.data_controller.getNoiseController()
+      const noise_controller = this.parent.getDataController().getNoiseController()
 
       if(noise_controller.isElevationDataInitialized()) {
         noise_controller.applyLayers()
@@ -54,8 +55,6 @@ export class IcoSphereMesh {
       }
 
       const results = noise_controller.getLayerData()
-
-      // console.log(results)
 
       let max_elevation = Number.MIN_VALUE
       let min_elevation = Number.MAX_VALUE
@@ -71,10 +70,10 @@ export class IcoSphereMesh {
         min_elevation = Math.min(min_elevation, elevation)
       }
 
-      this.data_controller.setMinMaxHeight(min_elevation, max_elevation)
+      this.parent.getDataController().setMinMaxHeight(min_elevation, max_elevation)
     }, true)
 
-    this.materialID = this.data_controller.getMaterialController().updateMeshMaterial(this.mesh, this.materialID)
+    this.materialID = this.parent.getDataController().updateMeshMaterial(this.mesh, this.materialID)
   }
 
   /** generates a new mesh from scratch */
@@ -99,12 +98,6 @@ export class IcoSphereMesh {
       this.originalPositionData[i*4 + 1] = data[i*3 + 1]
       this.originalPositionData[i*4 + 2] = data[i*3 + 2]
 
-      // this.originalPositionData[i*4 + 3] = 0
-
-
-      // this.originalElevationData[i*4 + 0] = 1
-      // this.originalElevationData[i*4 + 1] = 1
-
       this.originalElevationData[i*4 + 2] = 1
       this.originalElevationData[i*4 + 3] = 1
     }
@@ -124,10 +117,10 @@ export class IcoSphereMesh {
       /*, gl: GPGPU.createWebglContext(w, h) */
     }
 
-    this.data_controller.getNoiseController().setGPUSpecs(this.gpu_init)
+    this.parent.getDataController().getNoiseController().setGPUSpecs(this.gpu_init)
     //-----------------------------------------------
 
-    this.updateMesh()
+    // this.updateMesh()
 
     return this.mesh 
   }

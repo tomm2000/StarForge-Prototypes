@@ -8,13 +8,14 @@ import { GPUSpecs, NoiseController } from "../planet_data/NoiseController";
 import { texture_unifomrs } from "../../lib/GlslSnippets";
 
 export class OceanModifier extends NoiseLayer {
-  protected _properties = {
+  public _properties = {
     ...super.properties,
-    oceanFloor: 0,
-    oceanDepth: 1,
-    oceanLevel: 1,
-    floorFlatten: 5
+    ocean_floor: 0,
+    ocean_depth: 1,
+    ocean_level: 1,
+    floor_flatten: 5
   }
+  protected get properties() { return this._properties }
 
   constructor(gpuSpecs: GPUSpecs | undefined = undefined, controller: NoiseController, index: number) {
     super(gpuSpecs, controller, index)
@@ -29,10 +30,10 @@ export class OceanModifier extends NoiseLayer {
   protected getUniforms(): GPGPUuniform[] {
     return [
       ...super.getUniforms(),
-      {type: 'uniform1f', name: 'ocean_floor', value: this.properties.oceanFloor},
-      {type: 'uniform1f', name: 'ocean_depth', value: this.properties.oceanDepth},
-      {type: 'uniform1f', name: 'ocean_level', value: this.properties.oceanLevel},
-      {type: 'uniform1f', name: 'floor_flatten', value: this.properties.floorFlatten},
+      {type: 'uniform1f', name: 'ocean_floor', value: this.properties.ocean_floor},
+      {type: 'uniform1f', name: 'ocean_depth', value: this.properties.ocean_depth},
+      {type: 'uniform1f', name: 'ocean_level', value: this.properties.ocean_level},
+      {type: 'uniform1f', name: 'floor_flatten', value: this.properties.floor_flatten},
     ]
   }
 
@@ -41,21 +42,12 @@ export class OceanModifier extends NoiseLayer {
 
     console.log(super.properties)
 
-    this.observeGUI(gui.add(this.properties, 'oceanFloor', -2, 2, 0.01))
-    this.observeGUI(gui.add(this.properties, 'oceanDepth', 0.1, 5, 0.01))
-    this.observeGUI(gui.add(this.properties, 'oceanLevel', -2, 2, 0.01))
-    this.observeGUI(gui.add(this.properties, 'floorFlatten', 1, 10, 0.1))
+    this.observeGUI(gui.add(this.properties, 'ocean_floor', -2, 2, 0.01))
+    this.observeGUI(gui.add(this.properties, 'ocean_depth', 0.1, 5, 0.01))
+    this.observeGUI(gui.add(this.properties, 'ocean_level', -2, 2, 0.01))
+    this.observeGUI(gui.add(this.properties, 'floor_flatten', 1, 10, 0.1))
 
     return gui
-  }
-
-  getJson(): object {
-    const { oceanDepth, oceanFloor, oceanLevel, floorFlatten } = this.properties
-    
-    return {
-      ...super.getJson(),
-      oceanDepth, oceanFloor, oceanLevel, floorFlatten
-    }
   }
 }
 

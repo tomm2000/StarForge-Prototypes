@@ -1,4 +1,4 @@
-import { Scene } from "babylonjs";
+import { Mesh, Scene } from "babylonjs";
 import { GUI } from "dat.gui";
 import { destroyGUIrecursive } from "../../lib/GUI";
 import { MaterialController } from "./MaterialController";
@@ -12,9 +12,9 @@ type propertiesType = {
   type: PlanetTypes
   radius: number
   seed: number
-  seaLevel: number
-  minHeight: number
-  maxHeight: number
+  sea_level: number
+  min_height: number
+  max_height: number
 }
 
 export class DataController {
@@ -23,9 +23,9 @@ export class DataController {
     type: 'terrestrial1',
     radius: 1,
     seed: Math.floor(Math.random() * 9999),
-    seaLevel: 0,
-    minHeight: 0,
-    maxHeight: 0,
+    sea_level: 0,
+    min_height: 0,
+    max_height: 0,
   }
 
   //---- modules
@@ -42,10 +42,10 @@ export class DataController {
     // this.gui.add(this.properties, 'radius', 0.1, 2, 0.01)
     // this.gui.add(this.properties, 'seed', 0, 9999)
     //TODO: global seed for noise layers
-    this.gui.add(this.properties, 'seaLevel', 0, 1, 0.01)
+    this.gui.add(this.properties, 'sea_level', 0, 1, 0.01)
 
-    // this.gui.open()
     this.material_controller.generateGUI(gui)
+    this.noise_controller.generateGUI()
 
     return this.gui
   }
@@ -75,14 +75,14 @@ export class DataController {
   //-------------------------------------
 
   //---- GETTERS & SETTERS ----
-  setMinHeight(value: number) { this.properties.minHeight = value }
-  setMaxHeight(value: number) { this.properties.maxHeight = value }
-  setMinMaxHeight(min: number, max: number) { this.properties.minHeight = min; this.properties.maxHeight = max; }
-  getMinHeight() { return this.properties.minHeight }
-  getMaxHeight() { return this.properties.maxHeight }
+  setMinHeight(value: number) { this.properties.min_height = value }
+  setMaxHeight(value: number) { this.properties.max_height = value }
+  setMinMaxHeight(min: number, max: number) { this.properties.min_height = min; this.properties.max_height = max; }
+  getMinHeight() { return this.properties.min_height }
+  getMaxHeight() { return this.properties.max_height }
 
   getNoiseController() { return this.noise_controller }
-  getMaterialController() { return this.material_controller }
+  // getMaterialController() { return this.material_controller }
   //---------------------------
 
   dispose() {
@@ -91,15 +91,15 @@ export class DataController {
     destroyGUIrecursive(this.gui)
   }
 
-  /** updates the controller, what gets updated: \
-   * • the material controller nodes
-   */
-  update() {
+  //---- MATERIAL CONTROLLER ----
+  updateMeshMaterial(mesh: Mesh, id: number | undefined) {
     this.material_controller.updateNodes([
-      { name: 'INminHeight', value: this.properties.minHeight  },
-      { name: 'INmaxHeight', value: this.properties.maxHeight  },
-      { name: 'INseaLevel' , value: this.properties.seaLevel },
+      { name: 'INminHeight', value: this.properties.min_height  },
+      { name: 'INmaxHeight', value: this.properties.max_height  },
+      { name: 'INseaLevel' , value: this.properties.sea_level },
     ])
+
+    return this.material_controller.updateMeshMaterial(mesh, id)
   }
   
   //---- JSON ----

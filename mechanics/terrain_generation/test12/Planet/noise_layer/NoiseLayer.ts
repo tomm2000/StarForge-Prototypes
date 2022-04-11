@@ -4,6 +4,11 @@ import { GPGPU, GPGPUuniform } from "../../lib/GPGPU";
 import { destroyGUIrecursive } from "../../lib/GUI";
 import { GPUSpecs, NoiseController, NoiseTypeList, NoiseTypes } from "../planet_data/NoiseController";
 
+type propType = {
+  mask_index: number
+  mask_only: boolean
+}
+
 /**
  * Basic class for a noise layer
  * should be extended to create a new noise layer
@@ -18,11 +23,11 @@ export class NoiseLayer {
   protected gui: GUI | undefined
   protected gpuSpecs: GPUSpecs | undefined
 
-  protected _properties = {
-    maskIndex: -1,
-    maskOnly: false
+  protected _properties: propType = {
+    mask_index: -1,
+    mask_only: false
   }
-  protected set properties(value: any) { this._properties = value }
+  protected set properties(value: propType) { this._properties = value }
   protected get properties() { return this._properties }
 
   protected _noiseType: NoiseTypes = 'default'
@@ -33,7 +38,7 @@ export class NoiseLayer {
   protected get noiseType() { return this._noiseType } 
   
   setIndex(index: number) { this.layer_index = index }
-  getMaskIndex() { return this.properties.maskIndex }
+  getMaskIndex() { return this.properties.mask_index }
   protected getPositionShader() { return getDefaultPositionShader() }
   isInitialized() { return this.initialized }
 
@@ -60,8 +65,10 @@ export class NoiseLayer {
   /** @returns a json representation of the layer */
   getJson(): object {
     const { noiseType } = this
-    const { maskIndex, maskOnly } = this.properties
-    return { noiseType, maskIndex, maskOnly }
+    return {
+      noise_type: noiseType,
+      ...this.properties
+    }
   }
 
   /** creates a new layer with the given data */
@@ -71,6 +78,8 @@ export class NoiseLayer {
     const json: any = data
 
     for(let k in json) {
+      if(k == 'noise_type') { continue; };
+      
       (layer.properties as any)[k] = json[k]
     }
     return layer
@@ -81,8 +90,8 @@ export class NoiseLayer {
   /** creates the gui for the layer */
   generateGui(gui: GUI): GUI {
     gui.add(this, 'noiseType', NoiseTypeList)
-    this.observeGUI(gui.add(this.properties, 'maskIndex', -1, this.layer_index - 1, 1))
-    this.observeGUI(gui.add(this.properties, 'maskOnly'))
+    this.observeGUI(gui.add(this.properties, 'mask_index', -1, this.layer_index - 1, 1))
+    this.observeGUI(gui.add(this.properties, 'mask_only'))
 
 
     this.gui = gui
@@ -156,8 +165,8 @@ export class NoiseLayer {
   /** @returns the uniforms the shader needs */
   protected getUniforms(): GPGPUuniform[] {
     return [
-      {type: 'uniform1i', name: 'is_masked', value: this.properties.maskIndex >= 0 ? 1 : 0},
-      {type: 'uniform1i', name: 'mask_only', value: this.properties.maskOnly ? 1 : 0}
+      {type: 'uniform1i', name: 'is_masked', value: this.properties.mask_index >= 0 ? 1 : 0},
+      {type: 'uniform1i', name: 'mask_only', value: this.properties.mask_only ? 1 : 0}
     ]
   }
 ///===========================================================

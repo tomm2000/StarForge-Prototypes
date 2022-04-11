@@ -18,6 +18,7 @@ export class BasicNoise extends NoiseLayer {
     mantain_sign: false,
     seed: Math.floor(Math.random() * 9999)
   }
+  protected get properties() { return this._properties }
 
   constructor(gpuSpecs: GPUSpecs | undefined = undefined, controller: NoiseController, index: number) {
     super(gpuSpecs, controller, index)
@@ -56,15 +57,6 @@ export class BasicNoise extends NoiseLayer {
     this.observeGUI(gui.add(this.properties, 'mantain_sign'))
 
     return gui
-  }
-
-  getJson(): object {
-    const { seed, amplitude, frequency, octaves, persistance, lacunarity, exponent, mantain_sign } = this.properties
-    
-    return {
-      ...super.getJson(),
-      seed, amplitude, frequency, octaves, persistance, lacunarity, exponent, mantain_sign
-    }
   }
 }
 

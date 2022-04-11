@@ -8,7 +8,8 @@ import { DataController } from "../planet_data/DataController";
 
 export class Planet {
   //---- data
-  private dataController: DataController 
+  private dataController: DataController
+
   private _schemFile: string = ''
   get schemFile() { return this._schemFile }
   set schemFile(value: string) {
@@ -39,9 +40,11 @@ export class Planet {
     this.generateGUI()
   }
 
+  getDataController() { return this.dataController }
+
   static async fromJson(scene: Scene, data: object): Promise<Planet> {
-    const dataController = await DataController.fromJson(data, scene)
-    const planet = new Planet(scene, dataController)
+    const data_controller = await DataController.fromJson(data, scene)
+    const planet = new Planet(scene, data_controller)
     planet.update()
     return planet
   }
@@ -88,14 +91,14 @@ export class Planet {
   }
 
   update() {
-    this.dataController.update()
+    // this.dataController.update()
     this.mesh?.updateMesh();
   }
   //------------------
 
   //---- mesh ----
   generateMesh(): IcoSphereMesh {
-    const mesh = new IcoSphereMesh(this.scene, undefined, this.dataController)
+    const mesh = new IcoSphereMesh(this.scene, undefined, this)
 
     return mesh
   }
@@ -116,12 +119,8 @@ export class Planet {
     folder.add(this, 'autoUpdate')
     folder.add(this, 'update')
     folder.add(this, 'downloadJson')
-    // folder.add(this, 'uploadJson')
     folder.add(this, 'resetPlanet')
-
     this.schematicGUI = folder.add(this, 'schemFile', [])
-
-    // folder.open()
 
     this.dataGUI = this.dataController.generateGui(this.mainGUI)
     
