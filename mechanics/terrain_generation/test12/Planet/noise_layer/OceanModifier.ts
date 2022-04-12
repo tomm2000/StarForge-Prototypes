@@ -5,7 +5,7 @@ import { GPGPUuniform } from "../../lib/GPGPU";
 import { DataController } from "../planet_data/DataController";
 import { NoiseLayer } from "./NoiseLayer";
 import { GPUSpecs, NoiseController } from "../planet_data/NoiseController";
-import { texture_unifomrs } from "../../lib/GlslSnippets";
+import { texture_uniforms } from "../../lib/GlslSnippets";
 
 export class OceanModifier extends NoiseLayer {
   public _properties = {
@@ -61,7 +61,7 @@ uniform float floor_flatten;
 
 uniform int is_masked;
 
-${texture_unifomrs}
+${texture_uniforms}
 
 ${noise3D}
 

@@ -1,4 +1,4 @@
-import { texture_unifomrs } from "../../lib/GlslSnippets"
+import { texture_uniforms } from "../../lib/GlslSnippets"
 import { GPGPUuniform } from "../../lib/GPGPU"
 
 export type positionShader = { vertexSource: string, fragmentSource: string, uniforms: positionUniform[] }
@@ -42,7 +42,7 @@ export function getDefaultPositionShader(): positionShader {
       precision highp float;
 
       
-      ${texture_unifomrs}
+      ${texture_uniforms}
 
       void main() {
         gl_FragColor = texture2D(elevation_texture, vTextureCoord);

@@ -2,7 +2,7 @@ import { getDefaultPositionShaderVertex, positionShader } from "../misc/position
 import { noise3D } from "../../lib/GlslNoise";
 import { GPUSpecs, NoiseController } from "../planet_data/NoiseController";
 import { BasicNoise } from "./BasicNoise";
-import { texture_unifomrs } from "../../lib/GlslSnippets";
+import { texture_uniforms } from "../../lib/GlslSnippets";
 import { GPGPUuniform } from "../../lib/GPGPU";
 import { GUI } from "dat.gui";
 import { NoiseLayer } from "./NoiseLayer";
@@ -64,7 +64,7 @@ uniform float vertical_shift;
 uniform int is_masked;
 uniform int mask_only;
 
-${texture_unifomrs}
+${texture_uniforms}
 
 ${noise3D}
 

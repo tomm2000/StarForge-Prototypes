@@ -53,7 +53,7 @@ export class Planet {
     return this.fromJson(scene, JSON.parse(data))
   }
 
-  static makeEmpty(scene: Scene) {
+  static async makeEmpty(scene: Scene): Promise<Planet> {
     return new Planet(scene, DataController.makeEmpty(scene))
   }
 

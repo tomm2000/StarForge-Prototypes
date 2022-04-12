@@ -26,7 +26,10 @@ export class Universe {
       this.engine.resize();
     });
 
-    Planet.fromFirebase(this.scene, 'terr_1.json').then(planet => this.planets[0] = planet)
+    // Planet.fromFirebase(this.scene, 'terr_1.json').then(planet => this.planets[0] = planet)
+    Planet.fromFirebase(this.scene, 'crater_test.json').then(planet => this.planets[0] = planet)
+
+    // Planet.makeEmpty(this.scene).then(planet => this.planets[0] = planet)
   }
 
   setPlanetFromJson(data: object) {

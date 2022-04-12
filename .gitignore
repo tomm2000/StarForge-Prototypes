@@ -90,3 +90,6 @@ sw.*
 
 # Vim swap files
 *.swp
+
+# Random stuff
+/mechanics/terrain_generation/test12/assets/~$structure_diagram.drawio.bkp

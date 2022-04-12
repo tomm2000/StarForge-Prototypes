@@ -4,7 +4,7 @@ import { noise3D } from "../../lib/GlslNoise";
 import { GPGPUuniform } from "../../lib/GPGPU";
 import { NoiseLayer } from "./NoiseLayer";
 import { GPUSpecs, NoiseController, NoiseTypes } from "../planet_data/NoiseController";
-import { texture_unifomrs } from "../../lib/GlslSnippets";
+import { texture_uniforms } from "../../lib/GlslSnippets";
 
 export class BasicNoise extends NoiseLayer {
   protected _properties = {
@@ -75,7 +75,7 @@ uniform int mantain_sign;
 uniform int is_masked;
 uniform int mask_only;
 
-${texture_unifomrs}
+${texture_uniforms}
 
 ${noise3D}
 

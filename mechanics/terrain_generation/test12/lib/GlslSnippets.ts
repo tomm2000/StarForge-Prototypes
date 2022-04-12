@@ -3,7 +3,7 @@
  * **texture 1**: elevation (/,/,prev,tot) \
  * **texture 2**: mask
  */
-export const texture_unifomrs = /*glsl*/`
+export const texture_uniforms = /*glsl*/`
 uniform sampler2D texture0; // position
 uniform sampler2D texture1; // elevation (/,/,prev,tot)
 uniform sampler2D texture2; // mask (/,/,prev,tot)

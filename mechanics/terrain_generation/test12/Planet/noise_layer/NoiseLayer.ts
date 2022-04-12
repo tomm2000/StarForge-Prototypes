@@ -98,8 +98,12 @@ export class NoiseLayer {
     return gui
   }
 
-  protected observeGUI(gui: GUIController) {
-    gui.onChange((value) => { this.controller.changedLayer = Math.min(this.controller.changedLayer, this.layer_index) })
+  protected observeGUI(gui: GUIController, callback?: () => void) {
+    
+    gui.onChange((value) => {
+      this.controller.changedLayer = Math.min(this.controller.changedLayer, this.layer_index)
+      if(callback) callback()
+    })
   }
 ///===========================================================
 

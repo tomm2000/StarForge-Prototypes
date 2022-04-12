@@ -1,14 +1,15 @@
 import { GUI, GUIController } from "dat.gui";
 import { destroyGUIrecursive } from "../../lib/GUI";
 import { BasicNoise } from "../noise_layer/BasicNoise";
+import { CraterNoise } from "../noise_layer/CraterNoise";
 import { MaskNoise } from "../noise_layer/MaskNoise";
 import { NoiseLayer } from "../noise_layer/NoiseLayer";
 import { OceanModifier } from "../noise_layer/OceanModifier";
 import { PositiveNoise } from "../noise_layer/PositiveNoise";
 import { RidgeNoise } from "../noise_layer/RidgeNoise";
 
-export type NoiseTypes = 'default' | 'basic' | 'positive' | 'ridge' | 'ocean_modifier' | 'mask'
-export const NoiseTypeList: NoiseTypes[] = ['default', 'basic', 'positive', 'ridge', 'ocean_modifier', 'mask']
+export type NoiseTypes = 'default' | 'basic' | 'positive' | 'ridge' | 'ocean_modifier' | 'mask' | 'crater';
+export const NoiseTypeList: NoiseTypes[] = ['default', 'basic', 'positive', 'ridge', 'ocean_modifier', 'mask', 'crater']
 
 export type GPUSpecs = {
   width: number,
@@ -126,6 +127,8 @@ export class NoiseController {
 
     this.clearNoiseGUI()
 
+    console.log(index)
+
     this.noiseLayers[index].generateGui(this.layerGUI)
     this.indexGUI?.setValue(index)
   }
@@ -166,9 +169,11 @@ export class NoiseController {
 
     folder.add(this, 'addLayer')
     folder.add(this, 'removeLayer')
-    this.indexGUI = folder.add(this, 'currentLayer', 0, Math.max(0, this.noiseLayers.length), 1)
+    this.indexGUI = folder.add(this, 'currentLayer', 0, Math.max(0, this.noiseLayers.length - 1), 1)
 
     this.layerGUI = this.mainGUI.addFolder('noise layer')
+
+    this.switchLayer()
   }
   
   /** removes the gui */
@@ -263,5 +268,6 @@ export const noiseEnum: noiseEnumType = {
   'mask': MaskNoise,
   'ocean_modifier': OceanModifier,
   'positive': PositiveNoise,
-  'ridge': RidgeNoise
+  'ridge': RidgeNoise,
+  'crater': CraterNoise,
 }
