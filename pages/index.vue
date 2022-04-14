@@ -18,6 +18,10 @@
     <li><router-link class="link" to="/terrain12">terrain 12 (Reworked layer system)</router-link></li>
     <!-- <li><router-link to="/system1">system 1</router-link></li> -->
   </ul>
+  <h2>tests:</h2>
+  <ul>
+    <li><router-link class="link" to="/test/icosphere">icosphere</router-link></li>
+  </ul>
 </div>
 </template>
 

@@ -7,6 +7,7 @@ import { NoiseLayer } from "../noise_layer/NoiseLayer";
 import { OceanModifier } from "../noise_layer/OceanModifier";
 import { PositiveNoise } from "../noise_layer/PositiveNoise";
 import { RidgeNoise } from "../noise_layer/RidgeNoise";
+import { DataController } from "./DataController";
 
 export type NoiseTypes = 'default' | 'basic' | 'positive' | 'ridge' | 'ocean_modifier' | 'mask' | 'crater';
 export const NoiseTypeList: NoiseTypes[] = ['default', 'basic', 'positive', 'ridge', 'ocean_modifier', 'mask', 'crater']
@@ -25,6 +26,8 @@ export class NoiseController {
   private positionDataCache: Float32Array | undefined
   changedLayer: number = 0
 
+
+  private data_controller: DataController
   private gpuSpecs: GPUSpecs | undefined
 
   private _currentLayer: number = 0
@@ -43,8 +46,12 @@ export class NoiseController {
   private indexGUI: GUIController | undefined
   private layerGUI: GUI | undefined
 
+  getRadius() { return this.data_controller.getRadius() }
+
 ///================ CONSTRUCTORS & JSON ======================
-  private constructor() {}
+  private constructor(data_controller: DataController) {
+    this.data_controller = data_controller
+  }
   
   dispose() {
     this.noiseLayers.forEach(layer => { layer.dispose() })
@@ -59,9 +66,9 @@ export class NoiseController {
     }
   }
 
-  static fromJson(data: object): NoiseController {
+  static fromJson(data: object, data_controller: DataController): NoiseController {
   
-    const controller = new NoiseController();
+    const controller = new NoiseController(data_controller);
   
     (data as any).layers.forEach((layer: any, index: any) => {
       const new_layer = NoiseLayer.fromJson(layer, (noiseEnum as any)[layer.noise_type], controller, index)
@@ -71,8 +78,8 @@ export class NoiseController {
     return controller
   }
 
-  static makeEmpty(): NoiseController {
-    return new NoiseController()
+  static makeEmpty(data_controller: DataController): NoiseController {
+    return new NoiseController(data_controller)
   }
 ///===========================================================
 
@@ -226,10 +233,13 @@ export class NoiseController {
       }
 
       const el_data = i == 0 ? this.baseElevationDataCache : this.elevationDataCache[i-1]
+      let radius = this.data_controller.getRadius()
+      let position = this.positionDataCache.slice()
+      position = position.map(p => p * radius)
 
       this.elevationDataCache[i] = layer.applyNoise(
         el_data,
-        this.positionDataCache,
+        position,
         mask_data
       )
     }

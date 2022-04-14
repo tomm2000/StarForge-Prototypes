@@ -14,6 +14,7 @@ export class IcoSphereMesh {
   private originalElevationData: Float32Array | undefined
   private mesh: Mesh
   private materialID: number | undefined
+  private last_radius: number = 1
 
   //---- data
   private resolution: number = 10
@@ -45,22 +46,25 @@ export class IcoSphereMesh {
 
       const noise_controller = this.parent.getDataController().getNoiseController()
 
-      if(noise_controller.isElevationDataInitialized()) {
-        noise_controller.applyLayers()
+      const radius = this.parent.getDataController().getRadius()
+      const scale = this.parent.getDataController().getScale()
+
+      if(noise_controller!.isElevationDataInitialized()) {
+        noise_controller!.applyLayers()
       } else {
-        noise_controller.applyLayers(
+        noise_controller!.applyLayers(
           originalElevationData.slice(),
           originalPositionData.slice() 
         )
       }
 
-      const results = noise_controller.getLayerData()
+      const results = noise_controller!.getLayerData()
 
       let max_elevation = Number.MIN_VALUE
       let min_elevation = Number.MAX_VALUE
 
       for(let i = 0; i < results.length / 4; i++) {
-        const elevation = results[i*4 + 3]
+        const elevation = ((radius - 1) + results[i*4 + 3]) * scale
 
         data[i*3 + 0] = originalPositionData[i*4 + 0] * elevation
         data[i*3 + 1] = originalPositionData[i*4 + 1] * elevation
@@ -79,7 +83,7 @@ export class IcoSphereMesh {
   /** generates a new mesh from scratch */
   generateNewMesh(): Mesh {
     this.mesh?.dispose()
-    this.mesh = MeshBuilder.CreateIcoSphere('icosphere', {subdivisions: this.resolution, updatable: true, flat: false}, this.scene)
+    this.mesh = MeshBuilder.CreateIcoSphere('icosphere', { subdivisions: this.resolution, updatable: true, flat: false}, this.scene)
 
     /* along with 'flat: false', disables low poly */
     this.mesh.forceSharedVertices()
@@ -117,7 +121,7 @@ export class IcoSphereMesh {
       /*, gl: GPGPU.createWebglContext(w, h) */
     }
 
-    this.parent.getDataController().getNoiseController().setGPUSpecs(this.gpu_init)
+    this.parent.getDataController().getNoiseController()!.setGPUSpecs(this.gpu_init)
     //-----------------------------------------------
 
     // this.updateMesh()

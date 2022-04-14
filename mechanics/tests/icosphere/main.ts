@@ -1,10 +1,9 @@
 import { Scene, Engine, Vector3, HemisphericLight, MeshBuilder, StandardMaterial, ArcRotateCamera, Color4, Color3, PointLight, } from "babylonjs";
-import { Planet } from "./Planet/generators/Planet";
+import { SphereMesh } from "./mesh";
 
 export class Universe {
   private scene: Scene;
   private engine: Engine;
-  private planets: Planet[] = [];
   private divFps: HTMLElement | null
 
   constructor(canvas: HTMLCanvasElement) {
@@ -26,19 +25,7 @@ export class Universe {
       this.engine.resize();
     });
 
-    // Planet.fromFirebase(this.scene, 'terr_1.json').then(planet => this.planets[0] = planet)
-    Planet.fromFirebase(this.scene, 'terr_1.json').then(planet => this.planets[0] = planet)
-
-    // Planet.makeEmpty(this.scene).then(planet => this.planets[0] = planet)
-  }
-
-  setPlanetFromJson(data: object) {
-    this.planets[0].dispose()
-
-    Planet.fromJson(this.scene, data)
-      .then((planet) => {
-        this.planets[0] = planet
-      })
+    let sphere = new SphereMesh(this.scene);
   }
 
   private getNewScene(engine: Engine, canvas: HTMLCanvasElement): Scene {
@@ -88,6 +75,6 @@ export class Universe {
   }
 
   public dispose() {
-    this.planets.forEach(planet => planet.dispose())
+    this.engine.dispose();
   }
 }

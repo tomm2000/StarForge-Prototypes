@@ -39,11 +39,11 @@ export class CraterNoise extends NoiseLayer {
   generateGui(gui: GUI): GUI {
     gui = super.generateGui(gui)
 
-    this.observeGUI(gui.add(this.properties, 'crater_amount', 0, 64, 1)               , this.generateCraters.bind(this))
-    this.observeGUI(gui.add(this.properties, 'seed', 0, 9999, 1)                      , this.generateCraters.bind(this))
-    this.observeGUI(gui.add(this.properties, 'crater_min', 0, craterTypes.length-1, 1), this.generateCraters.bind(this))
-    this.observeGUI(gui.add(this.properties, 'crater_max', 0, craterTypes.length-1, 1), this.generateCraters.bind(this))
-    this.observeGUI(gui.add(this.properties, 'size_distribution', 0, 1, 0.01)         , this.generateCraters.bind(this))
+    this.observeGUI(gui.add(this.properties, 'crater_amount', 0, 64, 1)               )
+    this.observeGUI(gui.add(this.properties, 'seed', 0, 9999, 1)                      )
+    this.observeGUI(gui.add(this.properties, 'crater_min', 0, craterTypes.length-1, 1))
+    this.observeGUI(gui.add(this.properties, 'crater_max', 0, craterTypes.length-1, 1))
+    this.observeGUI(gui.add(this.properties, 'size_distribution', 0, 1, 0.01)         )
 
     // this.observeGUI(gui.add(craterTypes[0], 'crater_width' , 0.01,    1,  0.01), this.updateCraters.bind(this))
     // this.observeGUI(gui.add(craterTypes[0], 'crater_height', -0.5,    1, 0.001), this.updateCraters.bind(this))
@@ -55,13 +55,12 @@ export class CraterNoise extends NoiseLayer {
     return gui
   }
 
-  protected static randomSpherePoint(): Vector3 {
+  protected static randomSpherePoint(r: number): Vector3 {
       var u = Math.random();
       var v = Math.random();
       var theta = u * 2.0 * Math.PI;
       var phi = Math.acos(2.0 * v - 1.0);
       // var r = Math.cbrt(Math.random());
-      var r = 1
       var sinTheta = Math.sin(theta);
       var cosTheta = Math.cos(theta);
       var sinPhi = Math.sin(phi);
@@ -75,7 +74,7 @@ export class CraterNoise extends NoiseLayer {
   protected generateCraters() {
     for (let i = 0; i < this.properties.crater_amount; i++) {
       // let pos = new Vector3(Math.random() * 2-1, Math.random() * 2-1, Math.random() * 2-1).normalize()
-      let pos = CraterNoise.randomSpherePoint()
+      let pos = CraterNoise.randomSpherePoint(this.controller.getRadius())
       pos.toArray(this.crater_positions, i * 3)
 
       let n = Math.floor(CraterNoise.biasFunction(Math.random(), this.properties.size_distribution) * craterTypes.length)
@@ -91,6 +90,11 @@ export class CraterNoise extends NoiseLayer {
       this.crater_rims[i*3+1] = CraterNoise.bellFunction(craterTypes[n].rim_steepness, craterTypes[n].variation)
       this.crater_rims[i*3+2] = CraterNoise.bellFunction(craterTypes[n].smoothness   , craterTypes[n].variation)
     }
+  }
+
+  applyNoise(elevation_data: Float32Array, position_data: Float32Array, mask_data?: Float32Array): Float32Array {
+    this.generateCraters()
+    return super.applyNoise(elevation_data, position_data, mask_data)
   }
 
   protected static biasFunction(x: number, bias: number): number {
