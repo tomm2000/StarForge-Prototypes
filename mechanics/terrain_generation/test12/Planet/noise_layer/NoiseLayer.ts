@@ -42,6 +42,8 @@ export class NoiseLayer {
   protected getPositionShader() { return getDefaultPositionShader() }
   isInitialized() { return this.initialized }
 
+  protected init() { }
+
 ///================ CONSTRUCTORS & JSON ======================
   constructor(gpuSpecs: GPUSpecs | undefined = undefined, controller: NoiseController, index: number) {
     this.positionShader = this.getPositionShader()
@@ -82,6 +84,8 @@ export class NoiseLayer {
       
       (layer.properties as any)[k] = json[k]
     }
+
+    layer.init()
     return layer
   }
 ///===========================================================
@@ -99,7 +103,6 @@ export class NoiseLayer {
   }
 
   protected observeGUI(gui: GUIController, callback?: () => void) {
-    
     gui.onChange((value) => {
       this.controller.changedLayer = Math.min(this.controller.changedLayer, this.layer_index)
       if(callback) callback()
@@ -157,7 +160,9 @@ export class NoiseLayer {
   
     this.updateTextures(elevation_data, position_data, mask_data)
 
-    for(let uniform of this.getUniforms()) {
+    let uniforms = this.getUniforms()
+
+    for(let uniform of uniforms) {
       this.gpu.addUniform(uniform)
     }
 

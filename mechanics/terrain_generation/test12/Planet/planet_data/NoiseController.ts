@@ -232,9 +232,9 @@ export class NoiseController {
         this.positionDataCache,
         mask_data
       )
-
-      this.changedLayer = this.noiseLayers.length-1
     }
+
+    this.changedLayer = this.noiseLayers.length
   }
 
   /** wether the elevation and position data are initialized or not */

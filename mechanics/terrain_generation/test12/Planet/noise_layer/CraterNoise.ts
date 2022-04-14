@@ -12,6 +12,9 @@ export class CraterNoise extends NoiseLayer {
     ...super.properties,
     seed: Math.floor(Math.random() * 9999),
     crater_amount: 3,
+    crater_min: 0,
+    crater_max: craterTypes.length-1,
+    size_distribution: 0.2
   }
   protected get properties() { return this._properties }
   private crater_positions: number[] = []
@@ -22,8 +25,12 @@ export class CraterNoise extends NoiseLayer {
     super(gpuSpecs, controller, index)
 
     this._noiseType = 'crater'
+  }
+
+  protected init() {
+    super.init()
     this.generateCraters()
-  } 
+  }
 
   protected getPositionShader(): positionShader {
     return getDefaultPositionShaderVertex(FRAGMENT_SOURCE)
@@ -32,45 +39,49 @@ export class CraterNoise extends NoiseLayer {
   generateGui(gui: GUI): GUI {
     gui = super.generateGui(gui)
 
-    let g1 = gui.add(this.properties, 'crater_amount', 0, 8, 1)
-    let g2 = gui.add(this.properties, 'seed', 0, 9999, 1)
+    this.observeGUI(gui.add(this.properties, 'crater_amount', 0, 64, 1)               , this.generateCraters.bind(this))
+    this.observeGUI(gui.add(this.properties, 'seed', 0, 9999, 1)                      , this.generateCraters.bind(this))
+    this.observeGUI(gui.add(this.properties, 'crater_min', 0, craterTypes.length-1, 1), this.generateCraters.bind(this))
+    this.observeGUI(gui.add(this.properties, 'crater_max', 0, craterTypes.length-1, 1), this.generateCraters.bind(this))
+    this.observeGUI(gui.add(this.properties, 'size_distribution', 0, 1, 0.01)         , this.generateCraters.bind(this))
 
-    this.observeGUI(gui.add(craterTypes[0], 'crater_width' , 0.01,    1,  0.01), this.updateCraters.bind(this))
-    this.observeGUI(gui.add(craterTypes[0], 'crater_height', -0.5,    1, 0.001), this.updateCraters.bind(this))
-    this.observeGUI(gui.add(craterTypes[0], 'rim_steepness',    0,  0.5, 0.001), this.updateCraters.bind(this))
-    this.observeGUI(gui.add(craterTypes[0], 'rim_offset'   ,    0,    1,  0.01), this.updateCraters.bind(this))
-    this.observeGUI(gui.add(craterTypes[0], 'crater_floor' ,   -1,    1, 0.001), this.updateCraters.bind(this))
-    this.observeGUI(gui.add(craterTypes[0], 'smoothness'   ,    0,    1, 0.001), this.updateCraters.bind(this))
-
-    this.observeGUI(g1)
-    this.observeGUI(g2)
-
-    g1.onChange(this.generateCraters.bind(this))
-    g2.onChange(this.generateCraters.bind(this))
+    // this.observeGUI(gui.add(craterTypes[0], 'crater_width' , 0.01,    1,  0.01), this.updateCraters.bind(this))
+    // this.observeGUI(gui.add(craterTypes[0], 'crater_height', -0.5,    1, 0.001), this.updateCraters.bind(this))
+    // this.observeGUI(gui.add(craterTypes[0], 'rim_steepness',    0,  0.5, 0.001), this.updateCraters.bind(this))
+    // this.observeGUI(gui.add(craterTypes[0], 'rim_offset'   ,    0,    1,  0.01), this.updateCraters.bind(this))
+    // this.observeGUI(gui.add(craterTypes[0], 'crater_floor' ,   -1,    0.2, 0.001), this.updateCraters.bind(this))
+    // this.observeGUI(gui.add(craterTypes[0], 'smoothness'   ,    0,    1, 0.001), this.updateCraters.bind(this))
 
     return gui
   }
 
-  protected generateCraters() {
-    for (let i = 0; i < this.properties.crater_amount; i++) {
-      let pos = new Vector3(Math.random() * 2-1, Math.random() * 2-1, Math.random() * 2-1).normalize()
-      pos.toArray(this.crater_positions, i * 3)
-
-      let n = Math.floor(CraterNoise.biasFunction(Math.random(), 0.6) * craterTypes.length)
-
-      this.crater_sizes[i*3+0] = CraterNoise.bellFunction(craterTypes[n].crater_floor , craterTypes[n].variation)
-      this.crater_sizes[i*3+1] = CraterNoise.bellFunction(craterTypes[n].crater_height, craterTypes[n].variation)
-      this.crater_sizes[i*3+2] = CraterNoise.bellFunction(craterTypes[n].crater_width , craterTypes[n].variation)
-
-      this.crater_rims[i*3+0] = CraterNoise.bellFunction(craterTypes[n].rim_offset   , craterTypes[n].variation)
-      this.crater_rims[i*3+1] = CraterNoise.bellFunction(craterTypes[n].rim_steepness, craterTypes[n].variation)
-      this.crater_rims[i*3+2] = CraterNoise.bellFunction(craterTypes[n].smoothness   , craterTypes[n].variation)
-    }
+  protected static randomSpherePoint(): Vector3 {
+      var u = Math.random();
+      var v = Math.random();
+      var theta = u * 2.0 * Math.PI;
+      var phi = Math.acos(2.0 * v - 1.0);
+      // var r = Math.cbrt(Math.random());
+      var r = 1
+      var sinTheta = Math.sin(theta);
+      var cosTheta = Math.cos(theta);
+      var sinPhi = Math.sin(phi);
+      var cosPhi = Math.cos(phi);
+      var x = r * sinPhi * cosTheta;
+      var y = r * sinPhi * sinTheta;
+      var z = r * cosPhi;
+      return new Vector3(x, y, z);
   }
 
-  protected updateCraters() {
+  protected generateCraters() {
     for (let i = 0; i < this.properties.crater_amount; i++) {
-      let n = Math.floor(CraterNoise.biasFunction(Math.random(), 0.6) * craterTypes.length)
+      // let pos = new Vector3(Math.random() * 2-1, Math.random() * 2-1, Math.random() * 2-1).normalize()
+      let pos = CraterNoise.randomSpherePoint()
+      pos.toArray(this.crater_positions, i * 3)
+
+      let n = Math.floor(CraterNoise.biasFunction(Math.random(), this.properties.size_distribution) * craterTypes.length)
+
+      n = Math.max(n, this.properties.crater_min)
+      n = Math.min(n, this.properties.crater_max)
 
       this.crater_sizes[i*3+0] = CraterNoise.bellFunction(craterTypes[n].crater_floor , craterTypes[n].variation)
       this.crater_sizes[i*3+1] = CraterNoise.bellFunction(craterTypes[n].crater_height, craterTypes[n].variation)
@@ -110,8 +121,6 @@ export class CraterNoise extends NoiseLayer {
   }
 }
 
-type bell = { min: number, max: number }
-
 type craterType = {
   variation: number,
   crater_width  : number,
@@ -125,6 +134,15 @@ type craterType = {
 const craterTypes: craterType[] = [
 {
   variation: 0.1,
+  crater_width  : 0.05,
+  crater_height : 0.13,
+  crater_floor  : -0.03,
+  rim_steepness : 0.508,
+  rim_offset    : 0.54,
+  smoothness    : 0.178,
+},
+{
+  variation: 0.1,
   crater_width  : 0.11,
   crater_height : 0.13,
   crater_floor  : -0.05,
@@ -132,27 +150,38 @@ const craterTypes: craterType[] = [
   rim_offset    : 0.52,
   smoothness    : 0.112,
 },
-// {
-//   crater_width  : { min: 0.2, max: 0.3 },
-//   crater_height : { min: 0.2, max: 0.3 },
-//   rim_steepness : { min: 0.2, max: 0.3 },
-//   rim_offset    : { min: 0.2, max: 0.3 },
-//   crater_floor  : { min: 0.2, max: 0.3 },
-//   smoothness    : { min: 0.2, max: 0.3 },
-// },
-// {
-//   crater_width  : { min: 0.4, max: 0.5 },
-//   crater_height : { min: 0.4, max: 0.5 },
-//   rim_steepness : { min: 0.4, max: 0.5 },
-//   rim_offset    : { min: 0.4, max: 0.5 },
-//   crater_floor  : { min: 0.4, max: 0.5 },
-//   smoothness    : { min: 0.4, max: 0.5 },
-// }
+{
+  variation: 0.1,
+  crater_width  : 0.2,
+  crater_height : 0.08,
+  rim_steepness : 0.259,
+  rim_offset    : 0.47,
+  crater_floor  : -0.02,
+  smoothness    : 0.035,
+},
+{
+  variation: 0.1,
+  crater_width  : 0.25,
+  crater_height : 0.13,
+  rim_steepness : 0.303,
+  rim_offset    : 0.58,
+  crater_floor  : -0.02,
+  smoothness    : 0,
+},
+{
+  variation: 0.1,
+  crater_width  : 0.38,
+  crater_height : 0.476,
+  rim_steepness : 0.5,
+  rim_offset    : 0.46,
+  crater_floor  : -0.07,
+  smoothness    : 0.112,
+},
 ]
 
 const FRAGMENT_SOURCE = /*glsl*/`
 precision highp float;
-const int MAX_CRATERS = 8;
+const int MAX_CRATERS = 64;
 
 uniform int is_masked;
 uniform int mask_only;

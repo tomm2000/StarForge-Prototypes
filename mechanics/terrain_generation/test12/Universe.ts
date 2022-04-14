@@ -1,4 +1,4 @@
-import { Scene, Engine, Vector3, HemisphericLight, MeshBuilder, StandardMaterial, ArcRotateCamera, Color4, Color3, } from "babylonjs";
+import { Scene, Engine, Vector3, HemisphericLight, MeshBuilder, StandardMaterial, ArcRotateCamera, Color4, Color3, PointLight, } from "babylonjs";
 import { Planet } from "./Planet/generators/Planet";
 
 export class Universe {
@@ -65,7 +65,10 @@ export class Universe {
     camera.attachControl(canvas, false);
 
     // Create a basic light, aiming 0, 1, 0 - meaning, to the sky
-    var light = new HemisphericLight("light1", new Vector3(0, 1, 0), scene);
+    new HemisphericLight("light1", new Vector3(0, 1, 0), scene);
+
+    let light = new PointLight('light2', new Vector3(0, 2, 0), scene)
+    // light.
 
     // Create a built-in "ground" shape;
     var ground = MeshBuilder.CreateGround(

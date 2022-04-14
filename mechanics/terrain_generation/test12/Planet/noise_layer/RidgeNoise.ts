@@ -78,7 +78,7 @@ void main() {
   }
 
   if(mantain_sign == 1) {
-    total_elevation *= sign(amplitude);
+    total_elevation = abs(total_elevation) * sign(amplitude);
   }
   
   if(is_masked == 1) {

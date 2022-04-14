@@ -214,6 +214,7 @@ export class GPGPU {
   getPixels(startX = 0, startY = 0, spanX = this.width - startX, spanY = this.height - startY) {
     const buffer = new Float32Array(spanX * spanY * 4)
     this.gl.readPixels(startX, startY, spanX, spanY, this.gl.RGBA, this.gl.FLOAT, buffer)
+
     return buffer
   }
 
