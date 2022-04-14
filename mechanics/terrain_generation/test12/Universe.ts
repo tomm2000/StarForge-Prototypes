@@ -71,15 +71,15 @@ export class Universe {
     // light.
 
     // Create a built-in "ground" shape;
-    var ground = MeshBuilder.CreateGround(
-      "ground1",
-      { width: 12, height: 12, subdivisions: 6, updatable: false },
-      scene
-    );
-    const material = new StandardMaterial("texture", scene)
-    material.wireframe = true
-    ground.material = material
-    ground.position.y = -2;
+    // var ground = MeshBuilder.CreateGround(
+    //   "ground1",
+    //   { width: 12, height: 12, subdivisions: 6, updatable: false },
+    //   scene
+    // );
+    // const material = new StandardMaterial("texture", scene)
+    // material.wireframe = true
+    // ground.material = material
+    // ground.position.y = -2;
 
     scene.clearColor = new Color4(19/255, 19/255, 26/255)
 
