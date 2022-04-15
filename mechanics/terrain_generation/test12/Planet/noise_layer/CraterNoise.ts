@@ -219,6 +219,8 @@ void main() {
   float total_elevation = 0.0;
 
   for(int i = 0; i < MAX_CRATERS; i++) {
+    if(i >= crater_amount) break;
+
     float crater_floor = crater_sizes[i*3+0];
     float crater_height = crater_sizes[i*3+1];
     float crater_width = crater_sizes[i*3+2];
@@ -233,8 +235,6 @@ void main() {
       crater_positions[i * 3 + 2]
     );
 
-    if(i >= crater_amount) break;
-
     float x = length(position - center) / crater_width; 
 
     float cavity = (x * x - 1.0) * crater_height;
@@ -245,6 +245,10 @@ void main() {
     crater_shape = smoothMin(crater_shape, rim, smoothness);
 
     total_elevation += crater_shape;
+
+    if(total_elevation > rim) {
+      total_elevation -= crater_shape + crater_shape / 10.0;
+    }
   }
   
   float output_elevation = prev_elevation.a;

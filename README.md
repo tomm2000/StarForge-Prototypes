@@ -119,6 +119,8 @@ yarn deploy
   - re-added support for loading and downloading schematics (now with firebase)
   - re-added support for masks
   - new look for the page
+  - crater noise
+  - terrain presets (moon, terrestrial)
 </details>
 
 
@@ -140,3 +142,8 @@ yarn deploy
 
 ### more advanced noise features and better shader coloring
 ![terrain 06/03/22](https://github.com/tomm2000/StarForge-Prototypes/blob/master/assets/gallery/terrain_09_03_22.png?raw=true)
+
+---
+
+### showcanes of lunar terrain using the new noise system, crater noise and steepness-based coloring
+![terrain 06/03/22](https://github.com/tomm2000/StarForge-Prototypes/blob/master/assets/gallery/moon_15_04_22.png?raw=true)

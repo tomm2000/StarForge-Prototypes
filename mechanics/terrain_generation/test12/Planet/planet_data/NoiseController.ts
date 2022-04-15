@@ -134,8 +134,6 @@ export class NoiseController {
 
     this.clearNoiseGUI()
 
-    console.log(index)
-
     this.noiseLayers[index].generateGui(this.layerGUI)
     this.indexGUI?.setValue(index)
   }

@@ -40,8 +40,6 @@ export class OceanModifier extends NoiseLayer {
   generateGui(gui: GUI): GUI {
     gui = super.generateGui(gui)
 
-    console.log(super.properties)
-
     this.observeGUI(gui.add(this.properties, 'ocean_floor', -2, 2, 0.01))
     this.observeGUI(gui.add(this.properties, 'ocean_depth', 0.1, 5, 0.01))
     this.observeGUI(gui.add(this.properties, 'ocean_level', -2, 2, 0.01))

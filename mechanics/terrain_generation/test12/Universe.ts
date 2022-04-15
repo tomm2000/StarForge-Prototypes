@@ -27,7 +27,7 @@ export class Universe {
     });
 
     // Planet.fromFirebase(this.scene, 'terr_1.json').then(planet => this.planets[0] = planet)
-    Planet.fromFirebase(this.scene, 'terr_1.json').then(planet => this.planets[0] = planet)
+    Planet.fromFirebase(this.scene, 'terr_2.json').then(planet => this.planets[0] = planet)
 
     // Planet.makeEmpty(this.scene).then(planet => this.planets[0] = planet)
   }
@@ -50,7 +50,7 @@ export class Universe {
       "Camera",
       Math.PI / 4,
       Math.PI / 4,
-      4,
+      16,
       Vector3.Zero(),
       scene
     );
