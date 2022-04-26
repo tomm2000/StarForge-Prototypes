@@ -1,1 +1,0 @@
-the elevation values start from elevation = 1, masks calculation MUST keep this in mind!
