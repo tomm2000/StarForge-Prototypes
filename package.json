@@ -7,6 +7,12 @@
     "preview": "nuxt preview"
   },
   "devDependencies": {
+    "@types/three": "^0.139.0",
     "nuxt": "3.0.0-rc.1"
+  },
+  "dependencies": {
+    "open-simplex-noise": "^2.5.0",
+    "sass": "^1.51.0",
+    "three": "^0.139.2"
   }
 }
