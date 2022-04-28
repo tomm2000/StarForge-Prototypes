@@ -9,7 +9,7 @@ import { basicNoiseLayer, noise3D } from "../lib/GlslNoise";
 import { noiseId } from "../ObjectData/NoiseData";
 import { setNMInputValue } from "../lib/nodeMaterial";
 
-export class Terrestrial1 {
+export class Planet {
   icoSphereMesh: IcoSphereMesh
   planetData: PlanetData
   private gui: GUI | undefined

@@ -1,5 +1,5 @@
 import { getDownloadURL, listAll, ref } from "firebase/storage";
-import { getFirebaseApp } from "~/mechanics/firebase/init";
+import { getFirebaseApp } from "./init"
 
 /** loads the available materials and returns a list of them */
 export async function fetchMaterials(): Promise<string[]> {

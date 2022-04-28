@@ -13,7 +13,7 @@ import {
   AxesViewer
 } from "babylonjs";
 import { SphereMesh } from "./Sphere/SphereMesh";
-import { Terrestrial1 } from "./PlanetPrefabs/Terrestial1";
+import { Planet } from "./Plan./PlanetPrefabs/Planet
 import { PlanetPrefab } from "./PlanetPrefabs/PlanetPrefab";
 
 export class Universe {
@@ -43,7 +43,7 @@ export class Universe {
 
     const n = 1
     for(let i = 0; i < n; i++) {
-      this.planets.push(new Terrestrial1(this.scene))
+      this.planets.push(new Planet(this.scene))
     }
   }
 

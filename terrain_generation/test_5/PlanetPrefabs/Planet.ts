@@ -9,7 +9,7 @@ import { NoiseData } from "../ObjectData/NoiseData";
 import { PlanetData } from "../ObjectData/PlanetData";
 import { PlanetPrefab } from "./PlanetPrefab";
 
-export class Terrestrial1 implements PlanetPrefab {
+export class Planet implements PlanetPrefab {
   icoSphereMesh: IcoSphereMesh
   // icoSphereMesh: IcoSphereShader
   planetData: PlanetData

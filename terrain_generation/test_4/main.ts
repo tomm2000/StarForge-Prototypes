@@ -14,7 +14,7 @@ let item: Planet = null
 let updater: NodeJS.Timer = null
 const sizes = { width: 0, height: 0 }
 
-export function dispose() {
+function dispose() {
   renderer.dispose()
   controls.dispose()
   scene = null
@@ -23,9 +23,21 @@ export function dispose() {
   clearInterval(updater)
 }
 
-export function init(page_id: string, _canvas: HTMLCanvasElement, _wrap: HTMLDivElement) {
-  canvas = _canvas
-  wrap = _wrap
+export const mod = {
+  init,
+  dispose
+}
+
+type inputs = {
+  id: string,
+  canvas_element: HTMLCanvasElement,
+  wrap_element: HTMLDivElement,
+  fps_element: HTMLDivElement,
+}
+
+function init({id, canvas_element, wrap_element}: inputs) {
+  canvas = canvas_element
+  wrap = wrap_element
 
   addItem()
   addScene()

@@ -6,7 +6,7 @@ import { PlanetData } from "./PlanetData";
 import { BasePlanet } from "./BasePlanet";
 
 
-export class Terrestrial1 extends BasePlanet {
+export class Planet extends BasePlanet {
   constructor(scene: Scene, planetData: PlanetData = new PlanetData()) {
     super(scene, planetData);
   }

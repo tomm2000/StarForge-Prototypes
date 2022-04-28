@@ -8,7 +8,7 @@ import { SphereMesh } from "../Sphere/SphereMesh";
 import { makeNoise3D } from "open-simplex-noise";
 import { uvToCube } from "../Sphere/CubeTexture";
 
-export class Terrestrial1 implements PlanetPrefab  {
+export class Planet implements PlanetPrefab  {
   sphereMesh: SphereMesh
   planetData: PlanetData
   gui: GUI

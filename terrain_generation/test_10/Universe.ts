@@ -13,12 +13,12 @@ import {
   Color4,
 } from "babylonjs";
 import { PlanetData, PlanetDataJson } from "./ObjectData/PlanetData";
-import { Terrestrial1 } from "./PlanetPrefabs/Terrestial1";
+import { Planet } from "./PlanetPrefabs/Planet"
 
 export class Universe {
   private scene: Scene;
   private engine: Engine;
-  private planets: Terrestrial1[] = [];
+  private planets: Planet[] = [];
   private divFps: HTMLElement | null
 
   constructor(canvas: HTMLCanvasElement) {
@@ -49,13 +49,13 @@ export class Universe {
   addPlanetFromData(planetData: PlanetDataJson) {
     if(this.planets[0]) { this.planets[0]?.dispose() }
     
-    this.planets[0] = new Terrestrial1(this.scene, undefined, new PlanetData(planetData))
+    this.planets[0] = new Planet(this.scene, undefined, new PlanetData(planetData))
   }
 
   addPlanet() {
     if(this.planets[0]) { this.planets[0]?.dispose() }
     
-    this.planets[0] = new Terrestrial1(this.scene)
+    this.planets[0] = new Planet(this.scene)
   }
 
   private getNewScene(engine: Engine, canvas: HTMLCanvasElement): Scene {

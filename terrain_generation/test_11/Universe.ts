@@ -1,7 +1,7 @@
 import { Scene, Engine, Vector3,  HemisphericLight, MeshBuilder, StandardMaterial,  ArcRotateCamera, Color4, } from "babylonjs";
 import { PlanetData } from "./editor/PlanetGenerator/PlanetData";
 import { BasePlanet } from "./editor/PlanetGenerator/BasePlanet";
-import { Terrestrial1 } from "./editor/PlanetGenerator/Terrestial1";
+import { Planet } from "./editor/PlanetGenerator/Planet"
 import { PlanetDataJson } from "./common/PlanetData/PlanetDataJson";
 
 export class Universe {
@@ -31,20 +31,20 @@ export class Universe {
 
     const n = 1
     for(let i = 0; i < n; i++) {
-      this.planets.push(new Terrestrial1(this.scene))
+      this.planets.push(new Planet(this.scene))
     }
   }
 
   addPlanetFromData(planetData: PlanetDataJson) {
     if(this.planets[0]) { this.planets[0]?.dispose() }
     
-    this.planets[0] = new Terrestrial1(this.scene, new PlanetData(planetData))
+    this.planets[0] = new Planet(this.scene, new PlanetData(planetData))
   }
 
   addPlanet() {
     if(this.planets[0]) { this.planets[0]?.dispose() }
     
-    this.planets[0] = new Terrestrial1(this.scene)
+    this.planets[0] = new Planet(this.scene)
   }
 
   private getNewScene(engine: Engine, canvas: HTMLCanvasElement): Scene {

@@ -4,6 +4,12 @@
     <NuxtLink class="home-link" to="/">Home</NuxtLink>
     <span class="title">Terrain Generation prototype #{{ $route.params.test_id }}</span>
     <div class="description">{{description}}</div>
+    <div class="controls">
+      <input v-if="main != null && main.onUpload != undefined" @change="main.onUpload" type="file" class="file" />
+      <input v-if="main != null && main.onEmpty != undefined"  @click="main.onEmpty" type="button" class="empty" value="create empty" />
+      <div class="fps" ref="fps"></div>
+    </div>
+    
   </div>
   <div class="content box">
     <div class="canvas-wrap" ref="wrap"><canvas class="webgl canvas" ref="canvas"></canvas></div>
@@ -12,29 +18,38 @@
 </template>
 
 <script lang="ts" setup>
+import { Ref } from 'vue';
+
 const route = useRoute()
-let canvas = ref()
-let wrap = ref()
+let canvas: Ref<HTMLCanvasElement> = ref()
+let wrap: Ref<HTMLDivElement> = ref()
+let fps : Ref<HTMLDivElement>= ref()
 let description = ref('')
-let module = ref(null)
+let main = ref(null)
 
 onMounted(() => {
-  import(`/terrain_generation/test_${route.params.test_id}/main`).then((_module) => {
-    if(_module.init === undefined || _module.dispose === undefined) {
-      throw new Error(`canvas initializer for test #${route.params.test_id} is undefined`)
-    }
+  import(`../terrain_generation/test_${route.params.test_id}/main.ts`).then((exp) => {
+    let DisplayControllerFactory = exp.DisplayControllerFactory
 
-    module.value = _module
+    if(!(typeof route.params.test_id === 'string')) { throw 'test_id is not a string' }
 
-    description.value = module.value.init(route.params.test_id, canvas.value, wrap.value)
+    main.value = DisplayControllerFactory({
+      id: parseFloat(route.params.test_id),
+      canvas_element: canvas.value,
+      wrap_element: wrap.value,
+      fps_element: fps.value
+    })
+
+    description.value = main.value.getDescription()
   })
 });
 
 onUnmounted(() => {
-  module.value.dispose()
+  main.value.dispose()
+  delete main.value
 })
 
-defineExpose({canvas, wrap})
+defineExpose({canvas, wrap, fps})
 </script>
 
 <style lang="scss" scoped>
@@ -59,26 +74,60 @@ defineExpose({canvas, wrap})
   .menu {
     min-width: 20rem;
     width: 20rem;
-    display: flex;
+    display: grid;
     padding: 1rem;
-    flex-direction: column;
 
-    gap: 1rem;
+    grid-template-rows: 2rem 4rem 1fr 6rem;
+    grid-template-columns: 1fr;
+
+    gap: .5rem;
 
     .home-link {
+      grid-row: 1;
+      grid-column: 1;
       font-weight: bold;
       color: $color_accent_1_2;
     }
 
     .title {
+      grid-row: 2;
+      grid-column: 1;
       color: $color_white_1;
       font-size: 1.4rem;
     }
 
     .description {
+      grid-row: 3;
+      grid-column: 1;
       color: $color_white_2;
       font-weight: normal;
     }
+
+    .controls {
+        grid-row: 4;
+        grid-column: 1;
+        display: flex;
+        flex-direction: column;
+        gap: .5rem;
+      .fps {
+        color: $color_white_2;
+        font-weight: normal;
+        justify-self: flex-end;
+      }
+
+      .file {
+        color: $color_white_2;
+        font-weight: normal;
+        justify-self: flex-end;
+
+      }
+
+      .empty {
+        // color: $color_white_2;
+        font-weight: normal;
+        justify-self: flex-end;
+      }
+    }    
   }
 
   .content {
@@ -91,6 +140,8 @@ defineExpose({canvas, wrap})
       overflow: hidden;
 
       .canvas {
+        width: 100%;
+        height: 100%;
         border-radius: .5rem;
         border: 2px solid $color_accent_1_2;
       }

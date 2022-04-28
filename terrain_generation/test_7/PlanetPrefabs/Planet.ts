@@ -5,10 +5,10 @@ import { IcoSphereMesh } from "../IcoSphere/IcoSphereMesh";
 import { PlanetData } from "../ObjectData/PlanetData";
 import { PlanetPrefab } from './PlanetPrefab'
 
-import { getDefaultPositionShader, getDefaultPositionShaderVertex, positionShader } from "../IcoSphere/positionShader";
+import { getDefaultPositionShaderVertex, positionShader } from "../IcoSphere/positionShader";
 import { noise3D } from "../lib/GlslNoise";
 
-export class Terrestrial1 implements PlanetPrefab  {
+export class Planet implements PlanetPrefab  {
   icoSphereMesh: IcoSphereMesh
   planetData: PlanetData
   gui: GUI

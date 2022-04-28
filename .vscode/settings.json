@@ -12,7 +12,14 @@
     "**/.settings": true,
     "**/.factorypath": true,
     "node_modules": true,
-    ".nuxt": true
+    ".nuxt": true,
+    "terrain_generation/test_1": false,
+    "terrain_generation/test_2": false,
+    "terrain_generation/test_3": false,
+    "terrain_generation/test_4": false,
+    "terrain_generation/test_5": false,
+    "terrain_generation/test_6": false,
+    "terrain_generation/test_7": false
   },
   "explorerExclude.backup": null
 }

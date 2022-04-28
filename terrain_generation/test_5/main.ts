@@ -2,7 +2,7 @@ import { DirectionalLight, PerspectiveCamera, Scene } from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import { Vector2 } from 'three/src/math/Vector2'
 import { WebGLRenderer } from 'three/src/renderers/WebGLRenderer'
-import { FlatPlane } from './FlatPlane'
+import { Planet } from "./PlanetPrefabs/Planet"
 
 let canvas: HTMLCanvasElement = null
 let wrap: HTMLDivElement = null
@@ -10,7 +10,7 @@ let scene: Scene = null
 let camera: PerspectiveCamera = null
 let controls: OrbitControls = null
 let renderer: WebGLRenderer = null
-let item: FlatPlane = null
+let item: Planet = null
 let updater: NodeJS.Timer = null
 const sizes = { width: 0, height: 0 }
 
@@ -48,8 +48,8 @@ function init({id, canvas_element, wrap_element}: inputs) {
   addRenderer()
   addResizeListener()
 
-  item.generate()
-  scene.add(item.mesh)
+  // item.generate()
+  scene.add(item.getMesh())
   
   initUpdate()
 
@@ -60,7 +60,7 @@ const DESCRIPTION = `
 `
 
 function addItem() {
-  item = new FlatPlane(new Vector2(100, 100), new Vector2(10, 10))
+  item = new Planet()
 }
 
 function addScene() {
@@ -126,7 +126,7 @@ function addRenderer() {
 }
 
 function update() {
-  item.update()
+  // item.update()
   controls.update()
   renderer.render(scene, camera)
 }

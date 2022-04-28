@@ -7,9 +7,9 @@ import { IcoSphereMesh } from '../IcoSphere/IcoSphereMesh';
 import { NoiseData } from '../ObjectData/NoiseData';
 import { PlanetData } from '../ObjectData/PlanetData';
 import { PlanetPrefab } from './PlanetPrefab';
-import { noise3D } from '../../test7/lib/GlslNoise';
+import { noise3D } from './GlslNoise';
 
-export class Terrestrial1 implements PlanetPrefab {
+export class Planet implements PlanetPrefab {
   icoSphereMesh: IcoSphereMesh;
   planetData: PlanetData;
   gui: GUI;
