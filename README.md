@@ -6,7 +6,7 @@ The plan is to use the (eventual) final version of this project for another stan
 
 ---
 
-[live demo](https://tomm2000.github.io/StarForge-Prototypes/)
+[live demo](https://tomm2000.github.io/StarForge-Prototypes/terrain12)
 
 ## How to run:
 to run the project in development mode
